@@ -1,6 +1,6 @@
 # exercise1---Livia-Linhui-Fu
 Hi everyone,
 
-This directory is used to share codes, exerciers or other things for the class 'Data Management'.
+This respository is used to share codes, exerciers or other things for the class 'Data Management'.
 
 

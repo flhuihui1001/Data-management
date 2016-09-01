@@ -1,2 +1,6 @@
 # exercise1---Livia-Linhui-Fu
-hi 
+Hi everyone,
+
+This directory is used to share codes, exerciers or other things for the class 'Data Management'.
+
+

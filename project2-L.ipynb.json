@@ -1,0 +1,1435 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "--2016-11-09 18:11:40--  https://data.cityofnewyork.us/api/views/hyij-8hr7/rows.csv?accessType=DOWNLOAD\n",
+      "Resolving data.cityofnewyork.us (data.cityofnewyork.us)... 52.206.140.205\n",
+      "Connecting to data.cityofnewyork.us (data.cityofnewyork.us)|52.206.140.205|:443... connected.\n",
+      "HTTP request sent, awaiting response... 200 OK\n",
+      "Length: unspecified [text/csv]\n",
+      "Saving to: ‘rows.csv?accessType=DOWNLOAD’\n",
+      "\n",
+      "rows.csv?accessType     [        <=>           ] 185.12M  2.47MB/s   in 80s    \n",
+      "\n",
+      "Last-modified header invalid -- time-stamp ignored.\n",
+      "2016-11-09 18:13:01 (2.31 MB/s) - ‘rows.csv?accessType=DOWNLOAD’ saved [194111037]\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "!wget https://data.cityofnewyork.us/api/views/hyij-8hr7/rows.csv?accessType=DOWNLOAD"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "!mv rows.csv?accessType=DOWNLOAD crime.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "|-----------+------------+------------------------+-------------+------------------+----------------+-----------------+-----------------+----------------+--------------+---------------+--------------------------------+------------------------+--------+----------+-----------+---------------------+-------------+-------------+----------------------------------------|\r\n",
+      "|  OBJECTID | Identifier | Occurrence Date        | Day of Week | Occurrence Month | Occurrence Day | Occurrence Year | Occurrence Hour | CompStat Month | CompStat Day | CompStat Year | Offense                        | Offense Classification | Sector | Precinct | Borough   | Jurisdiction        | XCoordinate | YCoordinate | Location 1                             |\r\n",
+      "|-----------+------------+------------------------+-------------+------------------+----------------+-----------------+-----------------+----------------+--------------+---------------+--------------------------------+------------------------+--------+----------+-----------+---------------------+-------------+-------------+----------------------------------------|\r\n",
+      "|  1        | f070032d   | 09/06/1940 07:30:00 PM | Friday      | Sep              | 6              | 1940            | 19              | 9              | 7            | 2010          | BURGLARY                       | FELONY                 | D      | 66       | BROOKLYN  | N.Y. POLICE DEPT    | 987478      | 166141      | (40.6227027620001, -73.9883732929999)  |\r\n",
+      "|  2        | c6245d4d   | 12/14/1968 12:20:00 AM | Saturday    | Dec              | 14             | 1968            | 0               | 12             | 14           | 2008          | GRAND LARCENY                  | FELONY                 | G      | 28       | MANHATTAN | N.Y. POLICE DEPT    | 996470      | 232106      | (40.8037530600001, -73.955861904)      |\r\n",
+      "|  3        | 716dbc6f   | 10/30/1970 03:30:00 PM | Friday      | Oct              | 30             | 1970            | 15              | 10             | 31           | 2008          | BURGLARY                       | FELONY                 | H      | 84       | BROOKLYN  | N.Y. POLICE DEPT    | 986508      | 190249      | (40.688874254, -73.9918594329999)      |\r\n",
+      "|  4        | 638cd7b7   | 07/18/1972 11:00:00 PM | Tuesday     | Jul              | 18             | 1972            | 23              | 7              | 19           | 2012          | GRAND LARCENY OF MOTOR VEHICLE | FELONY                 | F      | 73       | BROOKLYN  | N.Y. POLICE DEPT    | 1005876     | 182440      | (40.6674141890001, -73.9220463899999)  |\r\n",
+      "|  5        | 6e410287   | 05/21/1987 12:01:00 AM | Thursday    | May              | 21             | 1987            | 0               | 5              | 28           | 2009          | GRAND LARCENY                  | FELONY                 | K      | 75       | BROOKLYN  | N.Y. POLICE DEPT    | 1017958     | 182266      | (40.6668988440001, -73.878495425)      |\r\n",
+      "|  6        | 7eebfe3c   | 02/01/1990 09:00:00 AM | Thursday    | Feb              | 1              | 1990            | 9               | 9              | 17           | 2014          | GRAND LARCENY                  | FELONY                 | K      | 105      | QUEENS    | N.Y. POLICE DEPT    | 1058407     | 204788      | (40.7284698170001, -73.7324430589999)  |\r\n",
+      "|  7        | da21f94f   | 11/13/1990 12:01:00 AM | Tuesday     | Nov              | 13             | 1990            | 0               | 6              | 7            | 2007          | GRAND LARCENY                  | FELONY                 |        | 73       | BROOKLYN  | N.Y. HOUSING POLICE | 1010272     | 183760      | (40.671025464, -73.906195082)          |\r\n",
+      "|  8        | 87c99e8c   | 02/02/1992 04:00:00 PM | Sunday      | Feb              | 2              | 1992            | 16              | 3              | 27           | 2012          | GRAND LARCENY                  | FELONY                 |        | 101      | QUEENS    | N.Y. POLICE DEPT    | 1053678     | 159044      | (40.6029515910001, -73.749976261)      |\r\n",
+      "|  9        | 495f57e1   | 08/08/1994 06:00:00 PM | Monday      | Aug              | 8              | 1994            | 18              | 7              | 31           | 2008          | RAPE                           | FELONY                 | A      | 103      | QUEENS    | N.Y. POLICE DEPT    | 1041749     | 196938      | (40.707047475, -73.792611904)          |\r\n",
+      "|-----------+------------+------------------------+-------------+------------------+----------------+-----------------+-----------------+----------------+--------------+---------------+--------------------------------+------------------------+--------+----------+-----------+---------------------+-------------+-------------+----------------------------------------|\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!csvcut crime.csv | head -10 | csvlook"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "1123466 crime.csv\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!wc -l crime.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "!csvcut crime.csv | csvgrep -c12 -m 'RAPE' > rape.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "  1: OBJECTID\r\n",
+      "  2: Identifier\r\n",
+      "  3: Occurrence Date\r\n",
+      "  4: Day of Week\r\n",
+      "  5: Occurrence Month\r\n",
+      "  6: Occurrence Day\r\n",
+      "  7: Occurrence Year\r\n",
+      "  8: Occurrence Hour\r\n",
+      "  9: CompStat Month\r\n",
+      " 10: CompStat Day\r\n",
+      " 11: CompStat Year\r\n",
+      " 12: Offense\r\n",
+      " 13: Offense Classification\r\n",
+      " 14: Sector\r\n",
+      " 15: Precinct\r\n",
+      " 16: Borough\r\n",
+      " 17: Jurisdiction\r\n",
+      " 18: XCoordinate\r\n",
+      " 19: YCoordinate\r\n",
+      " 20: Location 1\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!csvcut -n rape.csv "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "13780 rape.csv\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!wc -l rape.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "!csvcut -c3,4,5,6,7,8,12,14,15,16,17,18,19 rape.csv > rape_final.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "|-------------------------+-------------+------------------+----------------+-----------------+-----------------+---------+--------+----------+-----------+---------------------+-------------+--------------|\r\n",
+      "|  Occurrence Date        | Day of Week | Occurrence Month | Occurrence Day | Occurrence Year | Occurrence Hour | Offense | Sector | Precinct | Borough   | Jurisdiction        | XCoordinate | YCoordinate  |\r\n",
+      "|-------------------------+-------------+------------------+----------------+-----------------+-----------------+---------+--------+----------+-----------+---------------------+-------------+--------------|\r\n",
+      "|  08/08/1994 06:00:00 PM | Monday      | Aug              | 8              | 1994            | 18              | RAPE    | A      | 103      | QUEENS    | N.Y. POLICE DEPT    | 1041749     | 196938       |\r\n",
+      "|  02/01/1995 08:00:00 AM | Wednesday   | Feb              | 1              | 1995            | 8               | RAPE    | G      | 83       | BROOKLYN  | N.Y. POLICE DEPT    | 1006965     | 193571       |\r\n",
+      "|  01/09/2000 08:00:00 PM | Sunday      | Jan              | 9              | 2000            | 20              | RAPE    | G      | 108      | QUEENS    | N.Y. POLICE DEPT    | 996793      | 210001       |\r\n",
+      "|  01/09/2001 03:00:00 PM | Tuesday     | Jan              | 9              | 2001            | 15              | RAPE    | H      | 63       | BROOKLYN  | N.Y. HOUSING POLICE | 1000448     | 168068       |\r\n",
+      "|  02/11/2001 12:01:00 AM | Sunday      | Feb              | 11             | 2001            | 0               | RAPE    | B      | 25       | MANHATTAN | N.Y. POLICE DEPT    | 1000555     | 230994       |\r\n",
+      "|  11/19/2001 12:00:00 PM | Monday      | Nov              | 19             | 2001            | 12              | RAPE    | G      | 75       | BROOKLYN  | N.Y. POLICE DEPT    | 1017141     | 183798       |\r\n",
+      "|  07/25/2002 12:00:00 PM | Thursday    | Jul              | 25             | 2002            | 12              | RAPE    | A      | 101      | QUEENS    | N.Y. POLICE DEPT    | 1053678     | 159044       |\r\n",
+      "|  07/30/2002 12:00:00 PM | Tuesday     | Jul              | 30             | 2002            | 12              | RAPE    | E      | 47       | BRONX     | N.Y. POLICE DEPT    | 1026387     | 262634       |\r\n",
+      "|  10/15/2002 07:00:00 AM | Tuesday     | Oct              | 15             | 2002            | 7               | RAPE    | C      | 79       | BROOKLYN  | N.Y. POLICE DEPT    | 999634      | 190253       |\r\n",
+      "|-------------------------+-------------+------------------+----------------+-----------------+-----------------+---------+--------+----------+-----------+---------------------+-------------+--------------|\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!csvcut rape_final.csv | head | csvlook"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "The sql extension is already loaded. To reload it, use:\n",
+      "  %reload_ext sql\n"
+     ]
+    }
+   ],
+   "source": [
+    "%load_ext sql"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[sudo] password for jovyan: Restarting PostgreSQL 9.5 database server: main.\n"
+     ]
+    }
+   ],
+   "source": [
+    "!echo 'redspot' | sudo -S service postgresql restart"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 31,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "createdb: database creation failed: ERROR:  database \"Project2\" already exists\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!createdb -U dbuser Project2"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Connected: dbuser@Project2'"
+      ]
+     },
+     "execution_count": 32,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%sql postgresql://dbuser@localhost:5432/Project2"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "  1: Occurrence Date\r\n",
+      "  2: Day of Week\r\n",
+      "  3: Occurrence Month\r\n",
+      "  4: Occurrence Day\r\n",
+      "  5: Occurrence Year\r\n",
+      "  6: Occurrence Hour\r\n",
+      "  7: Offense\r\n",
+      "  8: Sector\r\n",
+      "  9: Precinct\r\n",
+      " 10: Borough\r\n",
+      " 11: Jurisdiction\r\n",
+      " 12: XCoordinate\r\n",
+      " 13: YCoordinate\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!csvcut -n rape_final.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "  1. Occurrence Date\n",
+      "\t<class 'datetime.datetime'>\n",
+      "\tNulls: True\n",
+      "\tMin: 1975-01-01 00:01:00\n",
+      "\tMax: 2015-12-30 18:00:00\n",
+      "\tUnique values: 12558\n",
+      "\t5 most frequent values:\n",
+      "\t\t2005-01-01 00:01:00:\t23\n",
+      "\t\t2007-01-01 00:01:00:\t22\n",
+      "\t\t2008-01-01 00:01:00:\t20\n",
+      "\t\t2006-01-01 00:01:00:\t18\n",
+      "\t\t2010-01-01 00:01:00:\t18\n",
+      "  2. Day of Week\n",
+      "\t<class 'str'>\n",
+      "\tNulls: True\n",
+      "\tUnique values: 7\n",
+      "\t5 most frequent values:\n",
+      "\t\tSaturday:\t2312\n",
+      "\t\tSunday:\t2255\n",
+      "\t\tFriday:\t2067\n",
+      "\t\tMonday:\t1831\n",
+      "\t\tThursday:\t1776\n",
+      "\tMax length: 9\n",
+      "  3. Occurrence Month\n",
+      "\t<class 'str'>\n",
+      "\tNulls: True\n",
+      "\tUnique values: 12\n",
+      "\t5 most frequent values:\n",
+      "\t\tJan:\t1414\n",
+      "\t\tJul:\t1299\n",
+      "\t\tAug:\t1268\n",
+      "\t\tJun:\t1266\n",
+      "\t\tOct:\t1166\n",
+      "\tMax length: 4\n",
+      "  4. Occurrence Day\n",
+      "\t<class 'int'>\n",
+      "\tNulls: True\n",
+      "\tMin: 1\n",
+      "\tMax: 31\n",
+      "\tSum: 190088\n",
+      "\tMean: 13.79648715343301\n",
+      "\tMedian: 14.0\n",
+      "\tStandard Deviation: 9.558368831423818\n",
+      "\tUnique values: 31\n",
+      "\t5 most frequent values:\n",
+      "\t\t1:\t2178\n",
+      "\t\t15:\t504\n",
+      "\t\t20:\t429\n",
+      "\t\t10:\t428\n",
+      "\t\t25:\t424\n",
+      "  5. Occurrence Year\n",
+      "\t<class 'int'>\n",
+      "\tNulls: True\n",
+      "\tMin: 1975\n",
+      "\tMax: 2015\n",
+      "\tSum: 27688816\n",
+      "\tMean: 2009.931475029036\n",
+      "\tMedian: 2010.0\n",
+      "\tStandard Deviation: 3.4293867397555946\n",
+      "\tUnique values: 30\n",
+      "\t5 most frequent values:\n",
+      "\t\t2006:\t1520\n",
+      "\t\t2011:\t1382\n",
+      "\t\t2012:\t1372\n",
+      "\t\t2010:\t1351\n",
+      "\t\t2013:\t1294\n",
+      "  6. Occurrence Hour\n",
+      "\t<class 'int'>\n",
+      "\tNulls: True\n",
+      "\tMin: 0\n",
+      "\tMax: 23\n",
+      "\tSum: 142660\n",
+      "\tMean: 10.355691056910569\n",
+      "\tMedian: 10.0\n",
+      "\tStandard Deviation: 7.80429500066486\n",
+      "\tUnique values: 24\n",
+      "\t5 most frequent values:\n",
+      "\t\t0:\t1941\n",
+      "\t\t12:\t850\n",
+      "\t\t23:\t731\n",
+      "\t\t2:\t729\n",
+      "\t\t3:\t674\n",
+      "  7. Offense\n",
+      "\t<class 'str'>\n",
+      "\tNulls: False\n",
+      "\tValues: RAPE\n",
+      "  8. Sector\n",
+      "\t<class 'str'>\n",
+      "\tNulls: True\n",
+      "\tUnique values: 26\n",
+      "\t5 most frequent values:\n",
+      "\t\tA:\t1442\n",
+      "\t\tB:\t1428\n",
+      "\t\tC:\t1361\n",
+      "\t\tE:\t1231\n",
+      "\t\tD:\t1228\n",
+      "\tMax length: 4\n",
+      "  9. Precinct\n",
+      "\t<class 'int'>\n",
+      "\tNulls: False\n",
+      "\tMin: 1\n",
+      "\tMax: 123\n",
+      "\tSum: 912449\n",
+      "\tMean: 66.2202627186298\n",
+      "\tMedian: 68\n",
+      "\tStandard Deviation: 33.185243108349916\n",
+      "\tUnique values: 77\n",
+      "\t5 most frequent values:\n",
+      "\t\t75:\t581\n",
+      "\t\t120:\t374\n",
+      "\t\t115:\t359\n",
+      "\t\t43:\t355\n",
+      "\t\t44:\t350\n",
+      " 10. Borough\n",
+      "\t<class 'str'>\n",
+      "\tNulls: False\n",
+      "\tValues: BROOKLYN, QUEENS, MANHATTAN, STATEN ISLAND, BRONX\n",
+      " 11. Jurisdiction\n",
+      "\t<class 'str'>\n",
+      "\tNulls: False\n",
+      "\tUnique values: 14\n",
+      "\t5 most frequent values:\n",
+      "\t\tN.Y. POLICE DEPT:\t12183\n",
+      "\t\tN.Y. HOUSING POLICE:\t1497\n",
+      "\t\tN.Y. TRANSIT POLICE:\t34\n",
+      "\t\tPOLICE DEPT NYC:\t16\n",
+      "\t\tOTHER:\t14\n",
+      "\tMax length: 19\n",
+      " 12. XCoordinate\n",
+      "\t<class 'int'>\n",
+      "\tNulls: False\n",
+      "\tMin: 914725\n",
+      "\tMax: 1057636\n",
+      "\tSum: 13886640832\n",
+      "\tMean: 1007811.9480368677\n",
+      "\tMedian: 1006434\n",
+      "\tStandard Deviation: 20156.816527987146\n",
+      "\tUnique values: 77\n",
+      "\t5 most frequent values:\n",
+      "\t\t1017141:\t581\n",
+      "\t\t962748:\t374\n",
+      "\t\t1018699:\t359\n",
+      "\t\t1020316:\t355\n",
+      "\t\t1006434:\t350\n",
+      " 13. YCoordinate\n",
+      "\t<class 'int'>\n",
+      "\tNulls: False\n",
+      "\tMin: 125837\n",
+      "\tMax: 262634\n",
+      "\tSum: 2877343184\n",
+      "\tMean: 208820.9002104652\n",
+      "\tMedian: 205267\n",
+      "\tStandard Deviation: 29531.48899220672\n",
+      "\tUnique values: 77\n",
+      "\t5 most frequent values:\n",
+      "\t\t183798:\t581\n",
+      "\t\t174174:\t374\n",
+      "\t\t215043:\t359\n",
+      "\t\t239179:\t355\n",
+      "\t\t244344:\t350\n",
+      "\n",
+      "Row count: 13779\n"
+     ]
+    }
+   ],
+   "source": [
+    "!csvstat rape_final.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 40,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 40,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "DROP TABLE IF EXISTS rapecrimes;\n",
+    "CREATE TABLE rapecrimes (\n",
+    "    date TIMESTAMP,\n",
+    "    day CHAR(9),\n",
+    "    month CHAR(4),\n",
+    "    day_n INT,\n",
+    "    year INT,\n",
+    "    hour CHAR(5),\n",
+    "    offense CHAR(5),\n",
+    "    sector CHAR(4),\n",
+    "    precint INT,\n",
+    "    borough CHAR(19),\n",
+    "    jur char(19),\n",
+    "    xcor BIGINT,\n",
+    "    ycor BIGINT\n",
+    "    )\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 41,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "13779 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 41,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "COPY rapecrimes FROM '/home/jovyan/work/rape_final.csv'\n",
+    "CSV\n",
+    "HEADER\n",
+    "QUOTE '\"'\n",
+    "DELIMITER ',';"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 42,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "10 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>date</th>\n",
+       "        <th>day</th>\n",
+       "        <th>month</th>\n",
+       "        <th>day_n</th>\n",
+       "        <th>year</th>\n",
+       "        <th>hour</th>\n",
+       "        <th>offense</th>\n",
+       "        <th>sector</th>\n",
+       "        <th>precint</th>\n",
+       "        <th>borough</th>\n",
+       "        <th>jur</th>\n",
+       "        <th>xcor</th>\n",
+       "        <th>ycor</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>1994-08-08 18:00:00</td>\n",
+       "        <td>Monday   </td>\n",
+       "        <td>Aug </td>\n",
+       "        <td>8</td>\n",
+       "        <td>1994</td>\n",
+       "        <td>18   </td>\n",
+       "        <td>RAPE </td>\n",
+       "        <td>A   </td>\n",
+       "        <td>103</td>\n",
+       "        <td>QUEENS             </td>\n",
+       "        <td>N.Y. POLICE DEPT   </td>\n",
+       "        <td>1041749</td>\n",
+       "        <td>196938</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>1995-02-01 08:00:00</td>\n",
+       "        <td>Wednesday</td>\n",
+       "        <td>Feb </td>\n",
+       "        <td>1</td>\n",
+       "        <td>1995</td>\n",
+       "        <td>8    </td>\n",
+       "        <td>RAPE </td>\n",
+       "        <td>G   </td>\n",
+       "        <td>83</td>\n",
+       "        <td>BROOKLYN           </td>\n",
+       "        <td>N.Y. POLICE DEPT   </td>\n",
+       "        <td>1006965</td>\n",
+       "        <td>193571</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2000-01-09 20:00:00</td>\n",
+       "        <td>Sunday   </td>\n",
+       "        <td>Jan </td>\n",
+       "        <td>9</td>\n",
+       "        <td>2000</td>\n",
+       "        <td>20   </td>\n",
+       "        <td>RAPE </td>\n",
+       "        <td>G   </td>\n",
+       "        <td>108</td>\n",
+       "        <td>QUEENS             </td>\n",
+       "        <td>N.Y. POLICE DEPT   </td>\n",
+       "        <td>996793</td>\n",
+       "        <td>210001</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2001-01-09 15:00:00</td>\n",
+       "        <td>Tuesday  </td>\n",
+       "        <td>Jan </td>\n",
+       "        <td>9</td>\n",
+       "        <td>2001</td>\n",
+       "        <td>15   </td>\n",
+       "        <td>RAPE </td>\n",
+       "        <td>H   </td>\n",
+       "        <td>63</td>\n",
+       "        <td>BROOKLYN           </td>\n",
+       "        <td>N.Y. HOUSING POLICE</td>\n",
+       "        <td>1000448</td>\n",
+       "        <td>168068</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2001-02-11 00:01:00</td>\n",
+       "        <td>Sunday   </td>\n",
+       "        <td>Feb </td>\n",
+       "        <td>11</td>\n",
+       "        <td>2001</td>\n",
+       "        <td>0    </td>\n",
+       "        <td>RAPE </td>\n",
+       "        <td>B   </td>\n",
+       "        <td>25</td>\n",
+       "        <td>MANHATTAN          </td>\n",
+       "        <td>N.Y. POLICE DEPT   </td>\n",
+       "        <td>1000555</td>\n",
+       "        <td>230994</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2001-11-19 12:00:00</td>\n",
+       "        <td>Monday   </td>\n",
+       "        <td>Nov </td>\n",
+       "        <td>19</td>\n",
+       "        <td>2001</td>\n",
+       "        <td>12   </td>\n",
+       "        <td>RAPE </td>\n",
+       "        <td>G   </td>\n",
+       "        <td>75</td>\n",
+       "        <td>BROOKLYN           </td>\n",
+       "        <td>N.Y. POLICE DEPT   </td>\n",
+       "        <td>1017141</td>\n",
+       "        <td>183798</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2002-07-25 12:00:00</td>\n",
+       "        <td>Thursday </td>\n",
+       "        <td>Jul </td>\n",
+       "        <td>25</td>\n",
+       "        <td>2002</td>\n",
+       "        <td>12   </td>\n",
+       "        <td>RAPE </td>\n",
+       "        <td>A   </td>\n",
+       "        <td>101</td>\n",
+       "        <td>QUEENS             </td>\n",
+       "        <td>N.Y. POLICE DEPT   </td>\n",
+       "        <td>1053678</td>\n",
+       "        <td>159044</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2002-07-30 12:00:00</td>\n",
+       "        <td>Tuesday  </td>\n",
+       "        <td>Jul </td>\n",
+       "        <td>30</td>\n",
+       "        <td>2002</td>\n",
+       "        <td>12   </td>\n",
+       "        <td>RAPE </td>\n",
+       "        <td>E   </td>\n",
+       "        <td>47</td>\n",
+       "        <td>BRONX              </td>\n",
+       "        <td>N.Y. POLICE DEPT   </td>\n",
+       "        <td>1026387</td>\n",
+       "        <td>262634</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2002-10-15 07:00:00</td>\n",
+       "        <td>Tuesday  </td>\n",
+       "        <td>Oct </td>\n",
+       "        <td>15</td>\n",
+       "        <td>2002</td>\n",
+       "        <td>7    </td>\n",
+       "        <td>RAPE </td>\n",
+       "        <td>C   </td>\n",
+       "        <td>79</td>\n",
+       "        <td>BROOKLYN           </td>\n",
+       "        <td>N.Y. POLICE DEPT   </td>\n",
+       "        <td>999634</td>\n",
+       "        <td>190253</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2002-11-25 00:01:00</td>\n",
+       "        <td>Monday   </td>\n",
+       "        <td>Nov </td>\n",
+       "        <td>25</td>\n",
+       "        <td>2002</td>\n",
+       "        <td>0    </td>\n",
+       "        <td>RAPE </td>\n",
+       "        <td>B   </td>\n",
+       "        <td>17</td>\n",
+       "        <td>MANHATTAN          </td>\n",
+       "        <td>N.Y. POLICE DEPT   </td>\n",
+       "        <td>992411</td>\n",
+       "        <td>215025</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(datetime.datetime(1994, 8, 8, 18, 0), 'Monday   ', 'Aug ', 8, 1994, '18   ', 'RAPE ', 'A   ', 103, 'QUEENS             ', 'N.Y. POLICE DEPT   ', 1041749, 196938),\n",
+       " (datetime.datetime(1995, 2, 1, 8, 0), 'Wednesday', 'Feb ', 1, 1995, '8    ', 'RAPE ', 'G   ', 83, 'BROOKLYN           ', 'N.Y. POLICE DEPT   ', 1006965, 193571),\n",
+       " (datetime.datetime(2000, 1, 9, 20, 0), 'Sunday   ', 'Jan ', 9, 2000, '20   ', 'RAPE ', 'G   ', 108, 'QUEENS             ', 'N.Y. POLICE DEPT   ', 996793, 210001),\n",
+       " (datetime.datetime(2001, 1, 9, 15, 0), 'Tuesday  ', 'Jan ', 9, 2001, '15   ', 'RAPE ', 'H   ', 63, 'BROOKLYN           ', 'N.Y. HOUSING POLICE', 1000448, 168068),\n",
+       " (datetime.datetime(2001, 2, 11, 0, 1), 'Sunday   ', 'Feb ', 11, 2001, '0    ', 'RAPE ', 'B   ', 25, 'MANHATTAN          ', 'N.Y. POLICE DEPT   ', 1000555, 230994),\n",
+       " (datetime.datetime(2001, 11, 19, 12, 0), 'Monday   ', 'Nov ', 19, 2001, '12   ', 'RAPE ', 'G   ', 75, 'BROOKLYN           ', 'N.Y. POLICE DEPT   ', 1017141, 183798),\n",
+       " (datetime.datetime(2002, 7, 25, 12, 0), 'Thursday ', 'Jul ', 25, 2002, '12   ', 'RAPE ', 'A   ', 101, 'QUEENS             ', 'N.Y. POLICE DEPT   ', 1053678, 159044),\n",
+       " (datetime.datetime(2002, 7, 30, 12, 0), 'Tuesday  ', 'Jul ', 30, 2002, '12   ', 'RAPE ', 'E   ', 47, 'BRONX              ', 'N.Y. POLICE DEPT   ', 1026387, 262634),\n",
+       " (datetime.datetime(2002, 10, 15, 7, 0), 'Tuesday  ', 'Oct ', 15, 2002, '7    ', 'RAPE ', 'C   ', 79, 'BROOKLYN           ', 'N.Y. POLICE DEPT   ', 999634, 190253),\n",
+       " (datetime.datetime(2002, 11, 25, 0, 1), 'Monday   ', 'Nov ', 25, 2002, '0    ', 'RAPE ', 'B   ', 17, 'MANHATTAN          ', 'N.Y. POLICE DEPT   ', 992411, 215025)]"
+      ]
+     },
+     "execution_count": 42,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select * from rapecrimes\n",
+    "LIMIT 10;"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 43,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "10 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>year</th>\n",
+       "        <th>count</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>None</td>\n",
+       "        <td>3</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>1975</td>\n",
+       "        <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>1992</td>\n",
+       "        <td>3</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2008</td>\n",
+       "        <td>1255</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2004</td>\n",
+       "        <td>115</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>1995</td>\n",
+       "        <td>5</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2014</td>\n",
+       "        <td>1204</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>1994</td>\n",
+       "        <td>6</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>1989</td>\n",
+       "        <td>2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2012</td>\n",
+       "        <td>1372</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(None, 3),\n",
+       " (1975, 1),\n",
+       " (1992, 3),\n",
+       " (2008, 1255),\n",
+       " (2004, 115),\n",
+       " (1995, 5),\n",
+       " (2014, 1204),\n",
+       " (1994, 6),\n",
+       " (1989, 2),\n",
+       " (2012, 1372)]"
+      ]
+     },
+     "execution_count": 43,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select year,count(*) from rapecrimes\n",
+    "GROUP BY year\n",
+    "LIMIT 10;"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 44,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "8 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>day</th>\n",
+       "        <th>count</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>None</td>\n",
+       "        <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Thursday </td>\n",
+       "        <td>1776</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Wednesday</td>\n",
+       "        <td>1769</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Monday   </td>\n",
+       "        <td>1831</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Tuesday  </td>\n",
+       "        <td>1768</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Sunday   </td>\n",
+       "        <td>2255</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Friday   </td>\n",
+       "        <td>2067</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Saturday </td>\n",
+       "        <td>2312</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(None, 1),\n",
+       " ('Thursday ', 1776),\n",
+       " ('Wednesday', 1769),\n",
+       " ('Monday   ', 1831),\n",
+       " ('Tuesday  ', 1768),\n",
+       " ('Sunday   ', 2255),\n",
+       " ('Friday   ', 2067),\n",
+       " ('Saturday ', 2312)]"
+      ]
+     },
+     "execution_count": 44,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select day,count(*) from rapecrimes\n",
+    "GROUP BY day\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 45,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "13 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>month</th>\n",
+       "        <th>count</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>None</td>\n",
+       "        <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Mar </td>\n",
+       "        <td>1060</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Apr </td>\n",
+       "        <td>1031</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Oct </td>\n",
+       "        <td>1166</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Nov </td>\n",
+       "        <td>1077</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Jul </td>\n",
+       "        <td>1299</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Aug </td>\n",
+       "        <td>1268</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Sep </td>\n",
+       "        <td>1159</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>May </td>\n",
+       "        <td>1085</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Jan </td>\n",
+       "        <td>1414</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Feb </td>\n",
+       "        <td>921</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Jun </td>\n",
+       "        <td>1266</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Dec </td>\n",
+       "        <td>1032</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(None, 1),\n",
+       " ('Mar ', 1060),\n",
+       " ('Apr ', 1031),\n",
+       " ('Oct ', 1166),\n",
+       " ('Nov ', 1077),\n",
+       " ('Jul ', 1299),\n",
+       " ('Aug ', 1268),\n",
+       " ('Sep ', 1159),\n",
+       " ('May ', 1085),\n",
+       " ('Jan ', 1414),\n",
+       " ('Feb ', 921),\n",
+       " ('Jun ', 1266),\n",
+       " ('Dec ', 1032)]"
+      ]
+     },
+     "execution_count": 45,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select month,count(*) from rapecrimes\n",
+    "GROUP BY month"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "collapsed": true
+   },
+   "source": [
+    "# Problem 3"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "1.Now we need to create a table to store all data. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 46,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 46,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "DROP TABLE IF EXISTS rapecrimes;\n",
+    "CREATE TABLE rapecrimes (\n",
+    "    date TIMESTAMP,\n",
+    "    day CHAR(9),\n",
+    "    month CHAR(4),\n",
+    "    day_n INT,\n",
+    "    year INT,\n",
+    "    hour CHAR(5),\n",
+    "    offense CHAR(5),\n",
+    "    sector CHAR(4),\n",
+    "    precint INT,\n",
+    "    borough CHAR(19),\n",
+    "    jur char(19),\n",
+    "    xcor BIGINT,\n",
+    "    ycor BIGINT\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 47,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "13779 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 47,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "COPY rapecrimes FROM '/home/jovyan/work/rape_final.csv'\n",
+    "CSV\n",
+    "HEADER\n",
+    "QUOTE '\"'\n",
+    "DELIMITER ',';"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 48,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "5 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>date</th>\n",
+       "        <th>day</th>\n",
+       "        <th>month</th>\n",
+       "        <th>day_n</th>\n",
+       "        <th>year</th>\n",
+       "        <th>hour</th>\n",
+       "        <th>offense</th>\n",
+       "        <th>sector</th>\n",
+       "        <th>precint</th>\n",
+       "        <th>borough</th>\n",
+       "        <th>jur</th>\n",
+       "        <th>xcor</th>\n",
+       "        <th>ycor</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>1994-08-08 18:00:00</td>\n",
+       "        <td>Monday   </td>\n",
+       "        <td>Aug </td>\n",
+       "        <td>8</td>\n",
+       "        <td>1994</td>\n",
+       "        <td>18   </td>\n",
+       "        <td>RAPE </td>\n",
+       "        <td>A   </td>\n",
+       "        <td>103</td>\n",
+       "        <td>QUEENS             </td>\n",
+       "        <td>N.Y. POLICE DEPT   </td>\n",
+       "        <td>1041749</td>\n",
+       "        <td>196938</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>1995-02-01 08:00:00</td>\n",
+       "        <td>Wednesday</td>\n",
+       "        <td>Feb </td>\n",
+       "        <td>1</td>\n",
+       "        <td>1995</td>\n",
+       "        <td>8    </td>\n",
+       "        <td>RAPE </td>\n",
+       "        <td>G   </td>\n",
+       "        <td>83</td>\n",
+       "        <td>BROOKLYN           </td>\n",
+       "        <td>N.Y. POLICE DEPT   </td>\n",
+       "        <td>1006965</td>\n",
+       "        <td>193571</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2000-01-09 20:00:00</td>\n",
+       "        <td>Sunday   </td>\n",
+       "        <td>Jan </td>\n",
+       "        <td>9</td>\n",
+       "        <td>2000</td>\n",
+       "        <td>20   </td>\n",
+       "        <td>RAPE </td>\n",
+       "        <td>G   </td>\n",
+       "        <td>108</td>\n",
+       "        <td>QUEENS             </td>\n",
+       "        <td>N.Y. POLICE DEPT   </td>\n",
+       "        <td>996793</td>\n",
+       "        <td>210001</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2001-01-09 15:00:00</td>\n",
+       "        <td>Tuesday  </td>\n",
+       "        <td>Jan </td>\n",
+       "        <td>9</td>\n",
+       "        <td>2001</td>\n",
+       "        <td>15   </td>\n",
+       "        <td>RAPE </td>\n",
+       "        <td>H   </td>\n",
+       "        <td>63</td>\n",
+       "        <td>BROOKLYN           </td>\n",
+       "        <td>N.Y. HOUSING POLICE</td>\n",
+       "        <td>1000448</td>\n",
+       "        <td>168068</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2001-02-11 00:01:00</td>\n",
+       "        <td>Sunday   </td>\n",
+       "        <td>Feb </td>\n",
+       "        <td>11</td>\n",
+       "        <td>2001</td>\n",
+       "        <td>0    </td>\n",
+       "        <td>RAPE </td>\n",
+       "        <td>B   </td>\n",
+       "        <td>25</td>\n",
+       "        <td>MANHATTAN          </td>\n",
+       "        <td>N.Y. POLICE DEPT   </td>\n",
+       "        <td>1000555</td>\n",
+       "        <td>230994</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(datetime.datetime(1994, 8, 8, 18, 0), 'Monday   ', 'Aug ', 8, 1994, '18   ', 'RAPE ', 'A   ', 103, 'QUEENS             ', 'N.Y. POLICE DEPT   ', 1041749, 196938),\n",
+       " (datetime.datetime(1995, 2, 1, 8, 0), 'Wednesday', 'Feb ', 1, 1995, '8    ', 'RAPE ', 'G   ', 83, 'BROOKLYN           ', 'N.Y. POLICE DEPT   ', 1006965, 193571),\n",
+       " (datetime.datetime(2000, 1, 9, 20, 0), 'Sunday   ', 'Jan ', 9, 2000, '20   ', 'RAPE ', 'G   ', 108, 'QUEENS             ', 'N.Y. POLICE DEPT   ', 996793, 210001),\n",
+       " (datetime.datetime(2001, 1, 9, 15, 0), 'Tuesday  ', 'Jan ', 9, 2001, '15   ', 'RAPE ', 'H   ', 63, 'BROOKLYN           ', 'N.Y. HOUSING POLICE', 1000448, 168068),\n",
+       " (datetime.datetime(2001, 2, 11, 0, 1), 'Sunday   ', 'Feb ', 11, 2001, '0    ', 'RAPE ', 'B   ', 25, 'MANHATTAN          ', 'N.Y. POLICE DEPT   ', 1000555, 230994)]"
+      ]
+     },
+     "execution_count": 48,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select * from rapecrimes\n",
+    "LIMIT 5;"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now create the table"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 49,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 49,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "DROP TABLE IF EXISTS rapecrimes;\n",
+    "CREATE TABLE rapecrimes (\n",
+    "    date TIMESTAMP,\n",
+    "    day CHAR(9),\n",
+    "    month CHAR(4),\n",
+    "    day_n INT,\n",
+    "    year INT,\n",
+    "    hour CHAR(5),\n",
+    "    offense CHAR(5),\n",
+    "    sector CHAR(4),\n",
+    "    precint INT,\n",
+    "    borough CHAR(19),\n",
+    "    jur char(19),\n",
+    "    xcor BIGINT,\n",
+    "    ycor BIGINT\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "create the table of dimension time, and create the primary key"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "%%sql\n",
+    "DROP TABLE IF EXISTS rapecrimes;\n",
+    "CREATE TABLE rapecrimes (\n",
+    "    date TIMESTAMP,\n",
+    "    day CHAR(9),\n",
+    "    month CHAR(4),\n",
+    "    day_n INT,\n",
+    "    year INT,\n",
+    "    hour CHAR(5),\n",
+    "    sector CHAR(4),\n",
+    "    precint INT,\n",
+    "    borough CHAR(19),\n",
+    "    jur char(19),\n",
+    "    xcor BIGINT,\n",
+    "    ycor BIGINT\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "create the fact table of rape, and replace the time with foreigh key "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "create the table of dimension location, and create the primary key"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "in the fact table of rape,replace the time with foreigh key "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.5.2"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 1
+}

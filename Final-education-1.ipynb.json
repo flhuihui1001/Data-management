@@ -1,0 +1,4115 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Data source:\n",
+    "\n",
+    "The data is from US department of education, you can download the data here: https://ed-public-download.apps.cloud.gov/downloads/CollegeScorecard_Raw_Data.zip.\n",
+    "\n",
+    "For detailed explaination of each column, you can see the database documentation: https://collegescorecard.ed.gov/assets/FullDataDocumentation.pdf"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "--2016-12-02 05:19:16--  https://ed-public-download.apps.cloud.gov/downloads/CollegeScorecard_Raw_Data.zip\n",
+      "Resolving ed-public-download.apps.cloud.gov (ed-public-download.apps.cloud.gov)... 107.23.95.12, 52.73.98.33, 2406:da00:ff00::3449:6221, ...\n",
+      "Connecting to ed-public-download.apps.cloud.gov (ed-public-download.apps.cloud.gov)|107.23.95.12|:443... connected.\n",
+      "HTTP request sent, awaiting response... 200 OK\n",
+      "Length: 240264190 (229M) [application/zip]\n",
+      "Saving to: ‘CollegeScorecard_Raw_Data.zip’\n",
+      "\n",
+      "CollegeScorecard_Ra 100%[=====================>] 229.13M  47.3MB/s   in 5.1s   \n",
+      "\n",
+      "2016-12-02 05:19:21 (44.9 MB/s) - ‘CollegeScorecard_Raw_Data.zip’ saved [240264190/240264190]\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "!wget https://ed-public-download.apps.cloud.gov/downloads/CollegeScorecard_Raw_Data.zip"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Archive:  CollegeScorecard_Raw_Data.zip\n",
+      "  inflating: Crosswalks_20160908.zip  \n",
+      "  inflating: MERGED1996_97_PP.csv    \n",
+      "  inflating: MERGED1997_98_PP.csv    \n",
+      "  inflating: MERGED1998_99_PP.csv    \n",
+      "  inflating: MERGED1999_00_PP.csv    \n",
+      "  inflating: MERGED2000_01_PP.csv    \n",
+      "  inflating: MERGED2001_02_PP.csv    \n",
+      "  inflating: MERGED2002_03_PP.csv    \n",
+      "  inflating: MERGED2003_04_PP.csv    \n",
+      "  inflating: MERGED2004_05_PP.csv    \n",
+      "  inflating: MERGED2005_06_PP.csv    \n",
+      "  inflating: MERGED2006_07_PP.csv    \n",
+      "  inflating: MERGED2007_08_PP.csv    \n",
+      "  inflating: MERGED2008_09_PP.csv    \n",
+      "  inflating: MERGED2009_10_PP.csv    \n",
+      "  inflating: MERGED2010_11_PP.csv    \n",
+      "  inflating: MERGED2011_12_PP.csv    \n",
+      "  inflating: MERGED2012_13_PP.csv    \n",
+      "  inflating: MERGED2013_14_PP.csv    \n",
+      "  inflating: MERGED2014_15_PP.csv    \n"
+     ]
+    }
+   ],
+   "source": [
+    "!unzip CollegeScorecard_Raw_Data.zip"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "7704 MERGED2014_15_PP.csv\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!wc -l MERGED2014_15_PP.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "collapsed": false,
+    "scrolled": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "  1: ﻿UNITID\r\n",
+      "  2: OPEID\r\n",
+      "  3: OPEID6\r\n",
+      "  4: INSTNM\r\n",
+      "  5: CITY\r\n",
+      "  6: STABBR\r\n",
+      "  7: ZIP\r\n",
+      "  8: ACCREDAGENCY\r\n",
+      "  9: INSTURL\r\n",
+      " 10: NPCURL\r\n",
+      " 11: SCH_DEG\r\n",
+      " 12: HCM2\r\n",
+      " 13: MAIN\r\n",
+      " 14: NUMBRANCH\r\n",
+      " 15: PREDDEG\r\n",
+      " 16: HIGHDEG\r\n",
+      " 17: CONTROL\r\n",
+      " 18: ST_FIPS\r\n",
+      " 19: REGION\r\n",
+      " 20: LOCALE\r\n",
+      " 21: LOCALE2\r\n",
+      " 22: LATITUDE\r\n",
+      " 23: LONGITUDE\r\n",
+      " 24: CCBASIC\r\n",
+      " 25: CCUGPROF\r\n",
+      " 26: CCSIZSET\r\n",
+      " 27: HBCU\r\n",
+      " 28: PBI\r\n",
+      " 29: ANNHI\r\n",
+      " 30: TRIBAL\r\n",
+      " 31: AANAPII\r\n",
+      " 32: HSI\r\n",
+      " 33: NANTI\r\n",
+      " 34: MENONLY\r\n",
+      " 35: WOMENONLY\r\n",
+      " 36: RELAFFIL\r\n",
+      " 37: ADM_RATE\r\n",
+      " 38: ADM_RATE_ALL\r\n",
+      " 39: SATVR25\r\n",
+      " 40: SATVR75\r\n",
+      " 41: SATMT25\r\n",
+      " 42: SATMT75\r\n",
+      " 43: SATWR25\r\n",
+      " 44: SATWR75\r\n",
+      " 45: SATVRMID\r\n",
+      " 46: SATMTMID\r\n",
+      " 47: SATWRMID\r\n",
+      " 48: ACTCM25\r\n",
+      " 49: ACTCM75\r\n",
+      " 50: ACTEN25\r\n",
+      " 51: ACTEN75\r\n",
+      " 52: ACTMT25\r\n",
+      " 53: ACTMT75\r\n",
+      " 54: ACTWR25\r\n",
+      " 55: ACTWR75\r\n",
+      " 56: ACTCMMID\r\n",
+      " 57: ACTENMID\r\n",
+      " 58: ACTMTMID\r\n",
+      " 59: ACTWRMID\r\n",
+      " 60: SAT_AVG\r\n",
+      " 61: SAT_AVG_ALL\r\n",
+      " 62: PCIP01\r\n",
+      " 63: PCIP03\r\n",
+      " 64: PCIP04\r\n",
+      " 65: PCIP05\r\n",
+      " 66: PCIP09\r\n",
+      " 67: PCIP10\r\n",
+      " 68: PCIP11\r\n",
+      " 69: PCIP12\r\n",
+      " 70: PCIP13\r\n",
+      " 71: PCIP14\r\n",
+      " 72: PCIP15\r\n",
+      " 73: PCIP16\r\n",
+      " 74: PCIP19\r\n",
+      " 75: PCIP22\r\n",
+      " 76: PCIP23\r\n",
+      " 77: PCIP24\r\n",
+      " 78: PCIP25\r\n",
+      " 79: PCIP26\r\n",
+      " 80: PCIP27\r\n",
+      " 81: PCIP29\r\n",
+      " 82: PCIP30\r\n",
+      " 83: PCIP31\r\n",
+      " 84: PCIP38\r\n",
+      " 85: PCIP39\r\n",
+      " 86: PCIP40\r\n",
+      " 87: PCIP41\r\n",
+      " 88: PCIP42\r\n",
+      " 89: PCIP43\r\n",
+      " 90: PCIP44\r\n",
+      " 91: PCIP45\r\n",
+      " 92: PCIP46\r\n",
+      " 93: PCIP47\r\n",
+      " 94: PCIP48\r\n",
+      " 95: PCIP49\r\n",
+      " 96: PCIP50\r\n",
+      " 97: PCIP51\r\n",
+      " 98: PCIP52\r\n",
+      " 99: PCIP54\r\n",
+      "100: CIP01CERT1\r\n",
+      "101: CIP01CERT2\r\n",
+      "102: CIP01ASSOC\r\n",
+      "103: CIP01CERT4\r\n",
+      "104: CIP01BACHL\r\n",
+      "105: CIP03CERT1\r\n",
+      "106: CIP03CERT2\r\n",
+      "107: CIP03ASSOC\r\n",
+      "108: CIP03CERT4\r\n",
+      "109: CIP03BACHL\r\n",
+      "110: CIP04CERT1\r\n",
+      "111: CIP04CERT2\r\n",
+      "112: CIP04ASSOC\r\n",
+      "113: CIP04CERT4\r\n",
+      "114: CIP04BACHL\r\n",
+      "115: CIP05CERT1\r\n",
+      "116: CIP05CERT2\r\n",
+      "117: CIP05ASSOC\r\n",
+      "118: CIP05CERT4\r\n",
+      "119: CIP05BACHL\r\n",
+      "120: CIP09CERT1\r\n",
+      "121: CIP09CERT2\r\n",
+      "122: CIP09ASSOC\r\n",
+      "123: CIP09CERT4\r\n",
+      "124: CIP09BACHL\r\n",
+      "125: CIP10CERT1\r\n",
+      "126: CIP10CERT2\r\n",
+      "127: CIP10ASSOC\r\n",
+      "128: CIP10CERT4\r\n",
+      "129: CIP10BACHL\r\n",
+      "130: CIP11CERT1\r\n",
+      "131: CIP11CERT2\r\n",
+      "132: CIP11ASSOC\r\n",
+      "133: CIP11CERT4\r\n",
+      "134: CIP11BACHL\r\n",
+      "135: CIP12CERT1\r\n",
+      "136: CIP12CERT2\r\n",
+      "137: CIP12ASSOC\r\n",
+      "138: CIP12CERT4\r\n",
+      "139: CIP12BACHL\r\n",
+      "140: CIP13CERT1\r\n",
+      "141: CIP13CERT2\r\n",
+      "142: CIP13ASSOC\r\n",
+      "143: CIP13CERT4\r\n",
+      "144: CIP13BACHL\r\n",
+      "145: CIP14CERT1\r\n",
+      "146: CIP14CERT2\r\n",
+      "147: CIP14ASSOC\r\n",
+      "148: CIP14CERT4\r\n",
+      "149: CIP14BACHL\r\n",
+      "150: CIP15CERT1\r\n",
+      "151: CIP15CERT2\r\n",
+      "152: CIP15ASSOC\r\n",
+      "153: CIP15CERT4\r\n",
+      "154: CIP15BACHL\r\n",
+      "155: CIP16CERT1\r\n",
+      "156: CIP16CERT2\r\n",
+      "157: CIP16ASSOC\r\n",
+      "158: CIP16CERT4\r\n",
+      "159: CIP16BACHL\r\n",
+      "160: CIP19CERT1\r\n",
+      "161: CIP19CERT2\r\n",
+      "162: CIP19ASSOC\r\n",
+      "163: CIP19CERT4\r\n",
+      "164: CIP19BACHL\r\n",
+      "165: CIP22CERT1\r\n",
+      "166: CIP22CERT2\r\n",
+      "167: CIP22ASSOC\r\n",
+      "168: CIP22CERT4\r\n",
+      "169: CIP22BACHL\r\n",
+      "170: CIP23CERT1\r\n",
+      "171: CIP23CERT2\r\n",
+      "172: CIP23ASSOC\r\n",
+      "173: CIP23CERT4\r\n",
+      "174: CIP23BACHL\r\n",
+      "175: CIP24CERT1\r\n",
+      "176: CIP24CERT2\r\n",
+      "177: CIP24ASSOC\r\n",
+      "178: CIP24CERT4\r\n",
+      "179: CIP24BACHL\r\n",
+      "180: CIP25CERT1\r\n",
+      "181: CIP25CERT2\r\n",
+      "182: CIP25ASSOC\r\n",
+      "183: CIP25CERT4\r\n",
+      "184: CIP25BACHL\r\n",
+      "185: CIP26CERT1\r\n",
+      "186: CIP26CERT2\r\n",
+      "187: CIP26ASSOC\r\n",
+      "188: CIP26CERT4\r\n",
+      "189: CIP26BACHL\r\n",
+      "190: CIP27CERT1\r\n",
+      "191: CIP27CERT2\r\n",
+      "192: CIP27ASSOC\r\n",
+      "193: CIP27CERT4\r\n",
+      "194: CIP27BACHL\r\n",
+      "195: CIP29CERT1\r\n",
+      "196: CIP29CERT2\r\n",
+      "197: CIP29ASSOC\r\n",
+      "198: CIP29CERT4\r\n",
+      "199: CIP29BACHL\r\n",
+      "200: CIP30CERT1\r\n",
+      "201: CIP30CERT2\r\n",
+      "202: CIP30ASSOC\r\n",
+      "203: CIP30CERT4\r\n",
+      "204: CIP30BACHL\r\n",
+      "205: CIP31CERT1\r\n",
+      "206: CIP31CERT2\r\n",
+      "207: CIP31ASSOC\r\n",
+      "208: CIP31CERT4\r\n",
+      "209: CIP31BACHL\r\n",
+      "210: CIP38CERT1\r\n",
+      "211: CIP38CERT2\r\n",
+      "212: CIP38ASSOC\r\n",
+      "213: CIP38CERT4\r\n",
+      "214: CIP38BACHL\r\n",
+      "215: CIP39CERT1\r\n",
+      "216: CIP39CERT2\r\n",
+      "217: CIP39ASSOC\r\n",
+      "218: CIP39CERT4\r\n",
+      "219: CIP39BACHL\r\n",
+      "220: CIP40CERT1\r\n",
+      "221: CIP40CERT2\r\n",
+      "222: CIP40ASSOC\r\n",
+      "223: CIP40CERT4\r\n",
+      "224: CIP40BACHL\r\n",
+      "225: CIP41CERT1\r\n",
+      "226: CIP41CERT2\r\n",
+      "227: CIP41ASSOC\r\n",
+      "228: CIP41CERT4\r\n",
+      "229: CIP41BACHL\r\n",
+      "230: CIP42CERT1\r\n",
+      "231: CIP42CERT2\r\n",
+      "232: CIP42ASSOC\r\n",
+      "233: CIP42CERT4\r\n",
+      "234: CIP42BACHL\r\n",
+      "235: CIP43CERT1\r\n",
+      "236: CIP43CERT2\r\n",
+      "237: CIP43ASSOC\r\n",
+      "238: CIP43CERT4\r\n",
+      "239: CIP43BACHL\r\n",
+      "240: CIP44CERT1\r\n",
+      "241: CIP44CERT2\r\n",
+      "242: CIP44ASSOC\r\n",
+      "243: CIP44CERT4\r\n",
+      "244: CIP44BACHL\r\n",
+      "245: CIP45CERT1\r\n",
+      "246: CIP45CERT2\r\n",
+      "247: CIP45ASSOC\r\n",
+      "248: CIP45CERT4\r\n",
+      "249: CIP45BACHL\r\n",
+      "250: CIP46CERT1\r\n",
+      "251: CIP46CERT2\r\n",
+      "252: CIP46ASSOC\r\n",
+      "253: CIP46CERT4\r\n",
+      "254: CIP46BACHL\r\n",
+      "255: CIP47CERT1\r\n",
+      "256: CIP47CERT2\r\n",
+      "257: CIP47ASSOC\r\n",
+      "258: CIP47CERT4\r\n",
+      "259: CIP47BACHL\r\n",
+      "260: CIP48CERT1\r\n",
+      "261: CIP48CERT2\r\n",
+      "262: CIP48ASSOC\r\n",
+      "263: CIP48CERT4\r\n",
+      "264: CIP48BACHL\r\n",
+      "265: CIP49CERT1\r\n",
+      "266: CIP49CERT2\r\n",
+      "267: CIP49ASSOC\r\n",
+      "268: CIP49CERT4\r\n",
+      "269: CIP49BACHL\r\n",
+      "270: CIP50CERT1\r\n",
+      "271: CIP50CERT2\r\n",
+      "272: CIP50ASSOC\r\n",
+      "273: CIP50CERT4\r\n",
+      "274: CIP50BACHL\r\n",
+      "275: CIP51CERT1\r\n",
+      "276: CIP51CERT2\r\n",
+      "277: CIP51ASSOC\r\n",
+      "278: CIP51CERT4\r\n",
+      "279: CIP51BACHL\r\n",
+      "280: CIP52CERT1\r\n",
+      "281: CIP52CERT2\r\n",
+      "282: CIP52ASSOC\r\n",
+      "283: CIP52CERT4\r\n",
+      "284: CIP52BACHL\r\n",
+      "285: CIP54CERT1\r\n",
+      "286: CIP54CERT2\r\n",
+      "287: CIP54ASSOC\r\n",
+      "288: CIP54CERT4\r\n",
+      "289: CIP54BACHL\r\n",
+      "290: DISTANCEONLY\r\n",
+      "291: UGDS\r\n",
+      "292: UG\r\n",
+      "293: UGDS_WHITE\r\n",
+      "294: UGDS_BLACK\r\n",
+      "295: UGDS_HISP\r\n",
+      "296: UGDS_ASIAN\r\n",
+      "297: UGDS_AIAN\r\n",
+      "298: UGDS_NHPI\r\n",
+      "299: UGDS_2MOR\r\n",
+      "300: UGDS_NRA\r\n",
+      "301: UGDS_UNKN\r\n",
+      "302: UGDS_WHITENH\r\n",
+      "303: UGDS_BLACKNH\r\n",
+      "304: UGDS_API\r\n",
+      "305: UGDS_AIANOLD\r\n",
+      "306: UGDS_HISPOLD\r\n",
+      "307: UG_NRA\r\n",
+      "308: UG_UNKN\r\n",
+      "309: UG_WHITENH\r\n",
+      "310: UG_BLACKNH\r\n",
+      "311: UG_API\r\n",
+      "312: UG_AIANOLD\r\n",
+      "313: UG_HISPOLD\r\n",
+      "314: PPTUG_EF\r\n",
+      "315: PPTUG_EF2\r\n",
+      "316: CURROPER\r\n",
+      "317: NPT4_PUB\r\n",
+      "318: NPT4_PRIV\r\n",
+      "319: NPT4_PROG\r\n",
+      "320: NPT4_OTHER\r\n",
+      "321: NPT41_PUB\r\n",
+      "322: NPT42_PUB\r\n",
+      "323: NPT43_PUB\r\n",
+      "324: NPT44_PUB\r\n",
+      "325: NPT45_PUB\r\n",
+      "326: NPT41_PRIV\r\n",
+      "327: NPT42_PRIV\r\n",
+      "328: NPT43_PRIV\r\n",
+      "329: NPT44_PRIV\r\n",
+      "330: NPT45_PRIV\r\n",
+      "331: NPT41_PROG\r\n",
+      "332: NPT42_PROG\r\n",
+      "333: NPT43_PROG\r\n",
+      "334: NPT44_PROG\r\n",
+      "335: NPT45_PROG\r\n",
+      "336: NPT41_OTHER\r\n",
+      "337: NPT42_OTHER\r\n",
+      "338: NPT43_OTHER\r\n",
+      "339: NPT44_OTHER\r\n",
+      "340: NPT45_OTHER\r\n",
+      "341: NPT4_048_PUB\r\n",
+      "342: NPT4_048_PRIV\r\n",
+      "343: NPT4_048_PROG\r\n",
+      "344: NPT4_048_OTHER\r\n",
+      "345: NPT4_3075_PUB\r\n",
+      "346: NPT4_3075_PRIV\r\n",
+      "347: NPT4_75UP_PUB\r\n",
+      "348: NPT4_75UP_PRIV\r\n",
+      "349: NPT4_3075_PROG\r\n",
+      "350: NPT4_3075_OTHER\r\n",
+      "351: NPT4_75UP_PROG\r\n",
+      "352: NPT4_75UP_OTHER\r\n",
+      "353: NUM4_PUB\r\n",
+      "354: NUM4_PRIV\r\n",
+      "355: NUM4_PROG\r\n",
+      "356: NUM4_OTHER\r\n",
+      "357: NUM41_PUB\r\n",
+      "358: NUM42_PUB\r\n",
+      "359: NUM43_PUB\r\n",
+      "360: NUM44_PUB\r\n",
+      "361: NUM45_PUB\r\n",
+      "362: NUM41_PRIV\r\n",
+      "363: NUM42_PRIV\r\n",
+      "364: NUM43_PRIV\r\n",
+      "365: NUM44_PRIV\r\n",
+      "366: NUM45_PRIV\r\n",
+      "367: NUM41_PROG\r\n",
+      "368: NUM42_PROG\r\n",
+      "369: NUM43_PROG\r\n",
+      "370: NUM44_PROG\r\n",
+      "371: NUM45_PROG\r\n",
+      "372: NUM41_OTHER\r\n",
+      "373: NUM42_OTHER\r\n",
+      "374: NUM43_OTHER\r\n",
+      "375: NUM44_OTHER\r\n",
+      "376: NUM45_OTHER\r\n",
+      "377: COSTT4_A\r\n",
+      "378: COSTT4_P\r\n",
+      "379: TUITIONFEE_IN\r\n",
+      "380: TUITIONFEE_OUT\r\n",
+      "381: TUITIONFEE_PROG\r\n",
+      "382: TUITFTE\r\n",
+      "383: INEXPFTE\r\n",
+      "384: AVGFACSAL\r\n",
+      "385: PFTFAC\r\n",
+      "386: PCTPELL\r\n",
+      "387: C150_4\r\n",
+      "388: C150_L4\r\n",
+      "389: C150_4_POOLED\r\n",
+      "390: C150_L4_POOLED\r\n",
+      "391: POOLYRS\r\n",
+      "392: PFTFTUG1_EF\r\n",
+      "393: D150_4\r\n",
+      "394: D150_L4\r\n",
+      "395: D150_4_POOLED\r\n",
+      "396: D150_L4_POOLED\r\n",
+      "397: C150_4_WHITE\r\n",
+      "398: C150_4_BLACK\r\n",
+      "399: C150_4_HISP\r\n",
+      "400: C150_4_ASIAN\r\n",
+      "401: C150_4_AIAN\r\n",
+      "402: C150_4_NHPI\r\n",
+      "403: C150_4_2MOR\r\n",
+      "404: C150_4_NRA\r\n",
+      "405: C150_4_UNKN\r\n",
+      "406: C150_4_WHITENH\r\n",
+      "407: C150_4_BLACKNH\r\n",
+      "408: C150_4_API\r\n",
+      "409: C150_4_AIANOLD\r\n",
+      "410: C150_4_HISPOLD\r\n",
+      "411: C150_L4_WHITE\r\n",
+      "412: C150_L4_BLACK\r\n",
+      "413: C150_L4_HISP\r\n",
+      "414: C150_L4_ASIAN\r\n",
+      "415: C150_L4_AIAN\r\n",
+      "416: C150_L4_NHPI\r\n",
+      "417: C150_L4_2MOR\r\n",
+      "418: C150_L4_NRA\r\n",
+      "419: C150_L4_UNKN\r\n",
+      "420: C150_L4_WHITENH\r\n",
+      "421: C150_L4_BLACKNH\r\n",
+      "422: C150_L4_API\r\n",
+      "423: C150_L4_AIANOLD\r\n",
+      "424: C150_L4_HISPOLD\r\n",
+      "425: C200_4\r\n",
+      "426: C200_L4\r\n",
+      "427: D200_4\r\n",
+      "428: D200_L4\r\n",
+      "429: RET_FT4\r\n",
+      "430: RET_FTL4\r\n",
+      "431: RET_PT4\r\n",
+      "432: RET_PTL4\r\n",
+      "433: C200_4_POOLED\r\n",
+      "434: C200_L4_POOLED\r\n",
+      "435: POOLYRS200\r\n",
+      "436: D200_4_POOLED\r\n",
+      "437: D200_L4_POOLED\r\n",
+      "438: PCTFLOAN\r\n",
+      "439: UG25ABV\r\n",
+      "440: CDR2\r\n",
+      "441: CDR3\r\n",
+      "442: DEATH_YR2_RT\r\n",
+      "443: COMP_ORIG_YR2_RT\r\n",
+      "444: COMP_4YR_TRANS_YR2_RT\r\n",
+      "445: COMP_2YR_TRANS_YR2_RT\r\n",
+      "446: WDRAW_ORIG_YR2_RT\r\n",
+      "447: WDRAW_4YR_TRANS_YR2_RT\r\n",
+      "448: WDRAW_2YR_TRANS_YR2_RT\r\n",
+      "449: ENRL_ORIG_YR2_RT\r\n",
+      "450: ENRL_4YR_TRANS_YR2_RT\r\n",
+      "451: ENRL_2YR_TRANS_YR2_RT\r\n",
+      "452: UNKN_ORIG_YR2_RT\r\n",
+      "453: UNKN_4YR_TRANS_YR2_RT\r\n",
+      "454: UNKN_2YR_TRANS_YR2_RT\r\n",
+      "455: LO_INC_DEATH_YR2_RT\r\n",
+      "456: LO_INC_COMP_ORIG_YR2_RT\r\n",
+      "457: LO_INC_COMP_4YR_TRANS_YR2_RT\r\n",
+      "458: LO_INC_COMP_2YR_TRANS_YR2_RT\r\n",
+      "459: LO_INC_WDRAW_ORIG_YR2_RT\r\n",
+      "460: LO_INC_WDRAW_4YR_TRANS_YR2_RT\r\n",
+      "461: LO_INC_WDRAW_2YR_TRANS_YR2_RT\r\n",
+      "462: LO_INC_ENRL_ORIG_YR2_RT\r\n",
+      "463: LO_INC_ENRL_4YR_TRANS_YR2_RT\r\n",
+      "464: LO_INC_ENRL_2YR_TRANS_YR2_RT\r\n",
+      "465: LO_INC_UNKN_ORIG_YR2_RT\r\n",
+      "466: LO_INC_UNKN_4YR_TRANS_YR2_RT\r\n",
+      "467: LO_INC_UNKN_2YR_TRANS_YR2_RT\r\n",
+      "468: MD_INC_DEATH_YR2_RT\r\n",
+      "469: MD_INC_COMP_ORIG_YR2_RT\r\n",
+      "470: MD_INC_COMP_4YR_TRANS_YR2_RT\r\n",
+      "471: MD_INC_COMP_2YR_TRANS_YR2_RT\r\n",
+      "472: MD_INC_WDRAW_ORIG_YR2_RT\r\n",
+      "473: MD_INC_WDRAW_4YR_TRANS_YR2_RT\r\n",
+      "474: MD_INC_WDRAW_2YR_TRANS_YR2_RT\r\n",
+      "475: MD_INC_ENRL_ORIG_YR2_RT\r\n",
+      "476: MD_INC_ENRL_4YR_TRANS_YR2_RT\r\n",
+      "477: MD_INC_ENRL_2YR_TRANS_YR2_RT\r\n",
+      "478: MD_INC_UNKN_ORIG_YR2_RT\r\n",
+      "479: MD_INC_UNKN_4YR_TRANS_YR2_RT\r\n",
+      "480: MD_INC_UNKN_2YR_TRANS_YR2_RT\r\n",
+      "481: HI_INC_DEATH_YR2_RT\r\n",
+      "482: HI_INC_COMP_ORIG_YR2_RT\r\n",
+      "483: HI_INC_COMP_4YR_TRANS_YR2_RT\r\n",
+      "484: HI_INC_COMP_2YR_TRANS_YR2_RT\r\n",
+      "485: HI_INC_WDRAW_ORIG_YR2_RT\r\n",
+      "486: HI_INC_WDRAW_4YR_TRANS_YR2_RT\r\n",
+      "487: HI_INC_WDRAW_2YR_TRANS_YR2_RT\r\n",
+      "488: HI_INC_ENRL_ORIG_YR2_RT\r\n",
+      "489: HI_INC_ENRL_4YR_TRANS_YR2_RT\r\n",
+      "490: HI_INC_ENRL_2YR_TRANS_YR2_RT\r\n",
+      "491: HI_INC_UNKN_ORIG_YR2_RT\r\n",
+      "492: HI_INC_UNKN_4YR_TRANS_YR2_RT\r\n",
+      "493: HI_INC_UNKN_2YR_TRANS_YR2_RT\r\n",
+      "494: DEP_DEATH_YR2_RT\r\n",
+      "495: DEP_COMP_ORIG_YR2_RT\r\n",
+      "496: DEP_COMP_4YR_TRANS_YR2_RT\r\n",
+      "497: DEP_COMP_2YR_TRANS_YR2_RT\r\n",
+      "498: DEP_WDRAW_ORIG_YR2_RT\r\n",
+      "499: DEP_WDRAW_4YR_TRANS_YR2_RT\r\n",
+      "500: DEP_WDRAW_2YR_TRANS_YR2_RT\r\n",
+      "501: DEP_ENRL_ORIG_YR2_RT\r\n",
+      "502: DEP_ENRL_4YR_TRANS_YR2_RT\r\n",
+      "503: DEP_ENRL_2YR_TRANS_YR2_RT\r\n",
+      "504: DEP_UNKN_ORIG_YR2_RT\r\n",
+      "505: DEP_UNKN_4YR_TRANS_YR2_RT\r\n",
+      "506: DEP_UNKN_2YR_TRANS_YR2_RT\r\n",
+      "507: IND_DEATH_YR2_RT\r\n",
+      "508: IND_COMP_ORIG_YR2_RT\r\n",
+      "509: IND_COMP_4YR_TRANS_YR2_RT\r\n",
+      "510: IND_COMP_2YR_TRANS_YR2_RT\r\n",
+      "511: IND_WDRAW_ORIG_YR2_RT\r\n",
+      "512: IND_WDRAW_4YR_TRANS_YR2_RT\r\n",
+      "513: IND_WDRAW_2YR_TRANS_YR2_RT\r\n",
+      "514: IND_ENRL_ORIG_YR2_RT\r\n",
+      "515: IND_ENRL_4YR_TRANS_YR2_RT\r\n",
+      "516: IND_ENRL_2YR_TRANS_YR2_RT\r\n",
+      "517: IND_UNKN_ORIG_YR2_RT\r\n",
+      "518: IND_UNKN_4YR_TRANS_YR2_RT\r\n",
+      "519: IND_UNKN_2YR_TRANS_YR2_RT\r\n",
+      "520: FEMALE_DEATH_YR2_RT\r\n",
+      "521: FEMALE_COMP_ORIG_YR2_RT\r\n",
+      "522: FEMALE_COMP_4YR_TRANS_YR2_RT\r\n",
+      "523: FEMALE_COMP_2YR_TRANS_YR2_RT\r\n",
+      "524: FEMALE_WDRAW_ORIG_YR2_RT\r\n",
+      "525: FEMALE_WDRAW_4YR_TRANS_YR2_RT\r\n",
+      "526: FEMALE_WDRAW_2YR_TRANS_YR2_RT\r\n",
+      "527: FEMALE_ENRL_ORIG_YR2_RT\r\n",
+      "528: FEMALE_ENRL_4YR_TRANS_YR2_RT\r\n",
+      "529: FEMALE_ENRL_2YR_TRANS_YR2_RT\r\n",
+      "530: FEMALE_UNKN_ORIG_YR2_RT\r\n",
+      "531: FEMALE_UNKN_4YR_TRANS_YR2_RT\r\n",
+      "532: FEMALE_UNKN_2YR_TRANS_YR2_RT\r\n",
+      "533: MALE_DEATH_YR2_RT\r\n",
+      "534: MALE_COMP_ORIG_YR2_RT\r\n",
+      "535: MALE_COMP_4YR_TRANS_YR2_RT\r\n",
+      "536: MALE_COMP_2YR_TRANS_YR2_RT\r\n",
+      "537: MALE_WDRAW_ORIG_YR2_RT\r\n",
+      "538: MALE_WDRAW_4YR_TRANS_YR2_RT\r\n",
+      "539: MALE_WDRAW_2YR_TRANS_YR2_RT\r\n",
+      "540: MALE_ENRL_ORIG_YR2_RT\r\n",
+      "541: MALE_ENRL_4YR_TRANS_YR2_RT\r\n",
+      "542: MALE_ENRL_2YR_TRANS_YR2_RT\r\n",
+      "543: MALE_UNKN_ORIG_YR2_RT\r\n",
+      "544: MALE_UNKN_4YR_TRANS_YR2_RT\r\n",
+      "545: MALE_UNKN_2YR_TRANS_YR2_RT\r\n",
+      "546: PELL_DEATH_YR2_RT\r\n",
+      "547: PELL_COMP_ORIG_YR2_RT\r\n",
+      "548: PELL_COMP_4YR_TRANS_YR2_RT\r\n",
+      "549: PELL_COMP_2YR_TRANS_YR2_RT\r\n",
+      "550: PELL_WDRAW_ORIG_YR2_RT\r\n",
+      "551: PELL_WDRAW_4YR_TRANS_YR2_RT\r\n",
+      "552: PELL_WDRAW_2YR_TRANS_YR2_RT\r\n",
+      "553: PELL_ENRL_ORIG_YR2_RT\r\n",
+      "554: PELL_ENRL_4YR_TRANS_YR2_RT\r\n",
+      "555: PELL_ENRL_2YR_TRANS_YR2_RT\r\n",
+      "556: PELL_UNKN_ORIG_YR2_RT\r\n",
+      "557: PELL_UNKN_4YR_TRANS_YR2_RT\r\n",
+      "558: PELL_UNKN_2YR_TRANS_YR2_RT\r\n",
+      "559: NOPELL_DEATH_YR2_RT\r\n",
+      "560: NOPELL_COMP_ORIG_YR2_RT\r\n",
+      "561: NOPELL_COMP_4YR_TRANS_YR2_RT\r\n",
+      "562: NOPELL_COMP_2YR_TRANS_YR2_RT\r\n",
+      "563: NOPELL_WDRAW_ORIG_YR2_RT\r\n",
+      "564: NOPELL_WDRAW_4YR_TRANS_YR2_RT\r\n",
+      "565: NOPELL_WDRAW_2YR_TRANS_YR2_RT\r\n",
+      "566: NOPELL_ENRL_ORIG_YR2_RT\r\n",
+      "567: NOPELL_ENRL_4YR_TRANS_YR2_RT\r\n",
+      "568: NOPELL_ENRL_2YR_TRANS_YR2_RT\r\n",
+      "569: NOPELL_UNKN_ORIG_YR2_RT\r\n",
+      "570: NOPELL_UNKN_4YR_TRANS_YR2_RT\r\n",
+      "571: NOPELL_UNKN_2YR_TRANS_YR2_RT\r\n",
+      "572: LOAN_DEATH_YR2_RT\r\n",
+      "573: LOAN_COMP_ORIG_YR2_RT\r\n",
+      "574: LOAN_COMP_4YR_TRANS_YR2_RT\r\n",
+      "575: LOAN_COMP_2YR_TRANS_YR2_RT\r\n",
+      "576: LOAN_WDRAW_ORIG_YR2_RT\r\n",
+      "577: LOAN_WDRAW_4YR_TRANS_YR2_RT\r\n",
+      "578: LOAN_WDRAW_2YR_TRANS_YR2_RT\r\n",
+      "579: LOAN_ENRL_ORIG_YR2_RT\r\n",
+      "580: LOAN_ENRL_4YR_TRANS_YR2_RT\r\n",
+      "581: LOAN_ENRL_2YR_TRANS_YR2_RT\r\n",
+      "582: LOAN_UNKN_ORIG_YR2_RT\r\n",
+      "583: LOAN_UNKN_4YR_TRANS_YR2_RT\r\n",
+      "584: LOAN_UNKN_2YR_TRANS_YR2_RT\r\n",
+      "585: NOLOAN_DEATH_YR2_RT\r\n",
+      "586: NOLOAN_COMP_ORIG_YR2_RT\r\n",
+      "587: NOLOAN_COMP_4YR_TRANS_YR2_RT\r\n",
+      "588: NOLOAN_COMP_2YR_TRANS_YR2_RT\r\n",
+      "589: NOLOAN_WDRAW_ORIG_YR2_RT\r\n",
+      "590: NOLOAN_WDRAW_4YR_TRANS_YR2_RT\r\n",
+      "591: NOLOAN_WDRAW_2YR_TRANS_YR2_RT\r\n",
+      "592: NOLOAN_ENRL_ORIG_YR2_RT\r\n",
+      "593: NOLOAN_ENRL_4YR_TRANS_YR2_RT\r\n",
+      "594: NOLOAN_ENRL_2YR_TRANS_YR2_RT\r\n",
+      "595: NOLOAN_UNKN_ORIG_YR2_RT\r\n",
+      "596: NOLOAN_UNKN_4YR_TRANS_YR2_RT\r\n",
+      "597: NOLOAN_UNKN_2YR_TRANS_YR2_RT\r\n",
+      "598: FIRSTGEN_DEATH_YR2_RT\r\n",
+      "599: FIRSTGEN_COMP_ORIG_YR2_RT\r\n",
+      "600: FIRSTGEN_COMP_4YR_TRANS_YR2_RT\r\n",
+      "601: FIRSTGEN_COMP_2YR_TRANS_YR2_RT\r\n",
+      "602: FIRSTGEN_WDRAW_ORIG_YR2_RT\r\n",
+      "603: FIRSTGEN_WDRAW_4YR_TRANS_YR2_RT\r\n",
+      "604: FIRSTGEN_WDRAW_2YR_TRANS_YR2_RT\r\n",
+      "605: FIRSTGEN_ENRL_ORIG_YR2_RT\r\n",
+      "606: FIRSTGEN_ENRL_4YR_TRANS_YR2_RT\r\n",
+      "607: FIRSTGEN_ENRL_2YR_TRANS_YR2_RT\r\n",
+      "608: FIRSTGEN_UNKN_ORIG_YR2_RT\r\n",
+      "609: FIRSTGEN_UNKN_4YR_TRANS_YR2_RT\r\n",
+      "610: FIRSTGEN_UNKN_2YR_TRANS_YR2_RT\r\n",
+      "611: NOT1STGEN_DEATH_YR2_RT\r\n",
+      "612: NOT1STGEN_COMP_ORIG_YR2_RT\r\n",
+      "613: NOT1STGEN_COMP_4YR_TRANS_YR2_RT\r\n",
+      "614: NOT1STGEN_COMP_2YR_TRANS_YR2_RT\r\n",
+      "615: NOT1STGEN_WDRAW_ORIG_YR2_RT\r\n",
+      "616: NOT1STGEN_WDRAW_4YR_TRANS_YR2_RT\r\n",
+      "617: NOT1STGEN_WDRAW_2YR_TRANS_YR2_RT\r\n",
+      "618: NOT1STGEN_ENRL_ORIG_YR2_RT\r\n",
+      "619: NOT1STGEN_ENRL_4YR_TRANS_YR2_RT\r\n",
+      "620: NOT1STGEN_ENRL_2YR_TRANS_YR2_RT\r\n",
+      "621: NOT1STGEN_UNKN_ORIG_YR2_RT\r\n",
+      "622: NOT1STGEN_UNKN_4YR_TRANS_YR2_RT\r\n",
+      "623: NOT1STGEN_UNKN_2YR_TRANS_YR2_RT\r\n",
+      "624: DEATH_YR3_RT\r\n",
+      "625: COMP_ORIG_YR3_RT\r\n",
+      "626: COMP_4YR_TRANS_YR3_RT\r\n",
+      "627: COMP_2YR_TRANS_YR3_RT\r\n",
+      "628: WDRAW_ORIG_YR3_RT\r\n",
+      "629: WDRAW_4YR_TRANS_YR3_RT\r\n",
+      "630: WDRAW_2YR_TRANS_YR3_RT\r\n",
+      "631: ENRL_ORIG_YR3_RT\r\n",
+      "632: ENRL_4YR_TRANS_YR3_RT\r\n",
+      "633: ENRL_2YR_TRANS_YR3_RT\r\n",
+      "634: UNKN_ORIG_YR3_RT\r\n",
+      "635: UNKN_4YR_TRANS_YR3_RT\r\n",
+      "636: UNKN_2YR_TRANS_YR3_RT\r\n",
+      "637: LO_INC_DEATH_YR3_RT\r\n",
+      "638: LO_INC_COMP_ORIG_YR3_RT\r\n",
+      "639: LO_INC_COMP_4YR_TRANS_YR3_RT\r\n",
+      "640: LO_INC_COMP_2YR_TRANS_YR3_RT\r\n",
+      "641: LO_INC_WDRAW_ORIG_YR3_RT\r\n",
+      "642: LO_INC_WDRAW_4YR_TRANS_YR3_RT\r\n",
+      "643: LO_INC_WDRAW_2YR_TRANS_YR3_RT\r\n",
+      "644: LO_INC_ENRL_ORIG_YR3_RT\r\n",
+      "645: LO_INC_ENRL_4YR_TRANS_YR3_RT\r\n",
+      "646: LO_INC_ENRL_2YR_TRANS_YR3_RT\r\n",
+      "647: LO_INC_UNKN_ORIG_YR3_RT\r\n",
+      "648: LO_INC_UNKN_4YR_TRANS_YR3_RT\r\n",
+      "649: LO_INC_UNKN_2YR_TRANS_YR3_RT\r\n",
+      "650: MD_INC_DEATH_YR3_RT\r\n",
+      "651: MD_INC_COMP_ORIG_YR3_RT\r\n",
+      "652: MD_INC_COMP_4YR_TRANS_YR3_RT\r\n",
+      "653: MD_INC_COMP_2YR_TRANS_YR3_RT\r\n",
+      "654: MD_INC_WDRAW_ORIG_YR3_RT\r\n",
+      "655: MD_INC_WDRAW_4YR_TRANS_YR3_RT\r\n",
+      "656: MD_INC_WDRAW_2YR_TRANS_YR3_RT\r\n",
+      "657: MD_INC_ENRL_ORIG_YR3_RT\r\n",
+      "658: MD_INC_ENRL_4YR_TRANS_YR3_RT\r\n",
+      "659: MD_INC_ENRL_2YR_TRANS_YR3_RT\r\n",
+      "660: MD_INC_UNKN_ORIG_YR3_RT\r\n",
+      "661: MD_INC_UNKN_4YR_TRANS_YR3_RT\r\n",
+      "662: MD_INC_UNKN_2YR_TRANS_YR3_RT\r\n",
+      "663: HI_INC_DEATH_YR3_RT\r\n",
+      "664: HI_INC_COMP_ORIG_YR3_RT\r\n",
+      "665: HI_INC_COMP_4YR_TRANS_YR3_RT\r\n",
+      "666: HI_INC_COMP_2YR_TRANS_YR3_RT\r\n",
+      "667: HI_INC_WDRAW_ORIG_YR3_RT\r\n",
+      "668: HI_INC_WDRAW_4YR_TRANS_YR3_RT\r\n",
+      "669: HI_INC_WDRAW_2YR_TRANS_YR3_RT\r\n",
+      "670: HI_INC_ENRL_ORIG_YR3_RT\r\n",
+      "671: HI_INC_ENRL_4YR_TRANS_YR3_RT\r\n",
+      "672: HI_INC_ENRL_2YR_TRANS_YR3_RT\r\n",
+      "673: HI_INC_UNKN_ORIG_YR3_RT\r\n",
+      "674: HI_INC_UNKN_4YR_TRANS_YR3_RT\r\n",
+      "675: HI_INC_UNKN_2YR_TRANS_YR3_RT\r\n",
+      "676: DEP_DEATH_YR3_RT\r\n",
+      "677: DEP_COMP_ORIG_YR3_RT\r\n",
+      "678: DEP_COMP_4YR_TRANS_YR3_RT\r\n",
+      "679: DEP_COMP_2YR_TRANS_YR3_RT\r\n",
+      "680: DEP_WDRAW_ORIG_YR3_RT\r\n",
+      "681: DEP_WDRAW_4YR_TRANS_YR3_RT\r\n",
+      "682: DEP_WDRAW_2YR_TRANS_YR3_RT\r\n",
+      "683: DEP_ENRL_ORIG_YR3_RT\r\n",
+      "684: DEP_ENRL_4YR_TRANS_YR3_RT\r\n",
+      "685: DEP_ENRL_2YR_TRANS_YR3_RT\r\n",
+      "686: DEP_UNKN_ORIG_YR3_RT\r\n",
+      "687: DEP_UNKN_4YR_TRANS_YR3_RT\r\n",
+      "688: DEP_UNKN_2YR_TRANS_YR3_RT\r\n",
+      "689: IND_DEATH_YR3_RT\r\n",
+      "690: IND_COMP_ORIG_YR3_RT\r\n",
+      "691: IND_COMP_4YR_TRANS_YR3_RT\r\n",
+      "692: IND_COMP_2YR_TRANS_YR3_RT\r\n",
+      "693: IND_WDRAW_ORIG_YR3_RT\r\n",
+      "694: IND_WDRAW_4YR_TRANS_YR3_RT\r\n",
+      "695: IND_WDRAW_2YR_TRANS_YR3_RT\r\n",
+      "696: IND_ENRL_ORIG_YR3_RT\r\n",
+      "697: IND_ENRL_4YR_TRANS_YR3_RT\r\n",
+      "698: IND_ENRL_2YR_TRANS_YR3_RT\r\n",
+      "699: IND_UNKN_ORIG_YR3_RT\r\n",
+      "700: IND_UNKN_4YR_TRANS_YR3_RT\r\n",
+      "701: IND_UNKN_2YR_TRANS_YR3_RT\r\n",
+      "702: FEMALE_DEATH_YR3_RT\r\n",
+      "703: FEMALE_COMP_ORIG_YR3_RT\r\n",
+      "704: FEMALE_COMP_4YR_TRANS_YR3_RT\r\n",
+      "705: FEMALE_COMP_2YR_TRANS_YR3_RT\r\n",
+      "706: FEMALE_WDRAW_ORIG_YR3_RT\r\n",
+      "707: FEMALE_WDRAW_4YR_TRANS_YR3_RT\r\n",
+      "708: FEMALE_WDRAW_2YR_TRANS_YR3_RT\r\n",
+      "709: FEMALE_ENRL_ORIG_YR3_RT\r\n",
+      "710: FEMALE_ENRL_4YR_TRANS_YR3_RT\r\n",
+      "711: FEMALE_ENRL_2YR_TRANS_YR3_RT\r\n",
+      "712: FEMALE_UNKN_ORIG_YR3_RT\r\n",
+      "713: FEMALE_UNKN_4YR_TRANS_YR3_RT\r\n",
+      "714: FEMALE_UNKN_2YR_TRANS_YR3_RT\r\n",
+      "715: MALE_DEATH_YR3_RT\r\n",
+      "716: MALE_COMP_ORIG_YR3_RT\r\n",
+      "717: MALE_COMP_4YR_TRANS_YR3_RT\r\n",
+      "718: MALE_COMP_2YR_TRANS_YR3_RT\r\n",
+      "719: MALE_WDRAW_ORIG_YR3_RT\r\n",
+      "720: MALE_WDRAW_4YR_TRANS_YR3_RT\r\n",
+      "721: MALE_WDRAW_2YR_TRANS_YR3_RT\r\n",
+      "722: MALE_ENRL_ORIG_YR3_RT\r\n",
+      "723: MALE_ENRL_4YR_TRANS_YR3_RT\r\n",
+      "724: MALE_ENRL_2YR_TRANS_YR3_RT\r\n",
+      "725: MALE_UNKN_ORIG_YR3_RT\r\n",
+      "726: MALE_UNKN_4YR_TRANS_YR3_RT\r\n",
+      "727: MALE_UNKN_2YR_TRANS_YR3_RT\r\n",
+      "728: PELL_DEATH_YR3_RT\r\n",
+      "729: PELL_COMP_ORIG_YR3_RT\r\n",
+      "730: PELL_COMP_4YR_TRANS_YR3_RT\r\n",
+      "731: PELL_COMP_2YR_TRANS_YR3_RT\r\n",
+      "732: PELL_WDRAW_ORIG_YR3_RT\r\n",
+      "733: PELL_WDRAW_4YR_TRANS_YR3_RT\r\n",
+      "734: PELL_WDRAW_2YR_TRANS_YR3_RT\r\n",
+      "735: PELL_ENRL_ORIG_YR3_RT\r\n",
+      "736: PELL_ENRL_4YR_TRANS_YR3_RT\r\n",
+      "737: PELL_ENRL_2YR_TRANS_YR3_RT\r\n",
+      "738: PELL_UNKN_ORIG_YR3_RT\r\n",
+      "739: PELL_UNKN_4YR_TRANS_YR3_RT\r\n",
+      "740: PELL_UNKN_2YR_TRANS_YR3_RT\r\n",
+      "741: NOPELL_DEATH_YR3_RT\r\n",
+      "742: NOPELL_COMP_ORIG_YR3_RT\r\n",
+      "743: NOPELL_COMP_4YR_TRANS_YR3_RT\r\n",
+      "744: NOPELL_COMP_2YR_TRANS_YR3_RT\r\n",
+      "745: NOPELL_WDRAW_ORIG_YR3_RT\r\n",
+      "746: NOPELL_WDRAW_4YR_TRANS_YR3_RT\r\n",
+      "747: NOPELL_WDRAW_2YR_TRANS_YR3_RT\r\n",
+      "748: NOPELL_ENRL_ORIG_YR3_RT\r\n",
+      "749: NOPELL_ENRL_4YR_TRANS_YR3_RT\r\n",
+      "750: NOPELL_ENRL_2YR_TRANS_YR3_RT\r\n",
+      "751: NOPELL_UNKN_ORIG_YR3_RT\r\n",
+      "752: NOPELL_UNKN_4YR_TRANS_YR3_RT\r\n",
+      "753: NOPELL_UNKN_2YR_TRANS_YR3_RT\r\n",
+      "754: LOAN_DEATH_YR3_RT\r\n",
+      "755: LOAN_COMP_ORIG_YR3_RT\r\n",
+      "756: LOAN_COMP_4YR_TRANS_YR3_RT\r\n",
+      "757: LOAN_COMP_2YR_TRANS_YR3_RT\r\n",
+      "758: LOAN_WDRAW_ORIG_YR3_RT\r\n",
+      "759: LOAN_WDRAW_4YR_TRANS_YR3_RT\r\n",
+      "760: LOAN_WDRAW_2YR_TRANS_YR3_RT\r\n",
+      "761: LOAN_ENRL_ORIG_YR3_RT\r\n",
+      "762: LOAN_ENRL_4YR_TRANS_YR3_RT\r\n",
+      "763: LOAN_ENRL_2YR_TRANS_YR3_RT\r\n",
+      "764: LOAN_UNKN_ORIG_YR3_RT\r\n",
+      "765: LOAN_UNKN_4YR_TRANS_YR3_RT\r\n",
+      "766: LOAN_UNKN_2YR_TRANS_YR3_RT\r\n",
+      "767: NOLOAN_DEATH_YR3_RT\r\n",
+      "768: NOLOAN_COMP_ORIG_YR3_RT\r\n",
+      "769: NOLOAN_COMP_4YR_TRANS_YR3_RT\r\n",
+      "770: NOLOAN_COMP_2YR_TRANS_YR3_RT\r\n",
+      "771: NOLOAN_WDRAW_ORIG_YR3_RT\r\n",
+      "772: NOLOAN_WDRAW_4YR_TRANS_YR3_RT\r\n",
+      "773: NOLOAN_WDRAW_2YR_TRANS_YR3_RT\r\n",
+      "774: NOLOAN_ENRL_ORIG_YR3_RT\r\n",
+      "775: NOLOAN_ENRL_4YR_TRANS_YR3_RT\r\n",
+      "776: NOLOAN_ENRL_2YR_TRANS_YR3_RT\r\n",
+      "777: NOLOAN_UNKN_ORIG_YR3_RT\r\n",
+      "778: NOLOAN_UNKN_4YR_TRANS_YR3_RT\r\n",
+      "779: NOLOAN_UNKN_2YR_TRANS_YR3_RT\r\n",
+      "780: FIRSTGEN_DEATH_YR3_RT\r\n",
+      "781: FIRSTGEN_COMP_ORIG_YR3_RT\r\n",
+      "782: FIRSTGEN_COMP_4YR_TRANS_YR3_RT\r\n",
+      "783: FIRSTGEN_COMP_2YR_TRANS_YR3_RT\r\n",
+      "784: FIRSTGEN_WDRAW_ORIG_YR3_RT\r\n",
+      "785: FIRSTGEN_WDRAW_4YR_TRANS_YR3_RT\r\n",
+      "786: FIRSTGEN_WDRAW_2YR_TRANS_YR3_RT\r\n",
+      "787: FIRSTGEN_ENRL_ORIG_YR3_RT\r\n",
+      "788: FIRSTGEN_ENRL_4YR_TRANS_YR3_RT\r\n",
+      "789: FIRSTGEN_ENRL_2YR_TRANS_YR3_RT\r\n",
+      "790: FIRSTGEN_UNKN_ORIG_YR3_RT\r\n",
+      "791: FIRSTGEN_UNKN_4YR_TRANS_YR3_RT\r\n",
+      "792: FIRSTGEN_UNKN_2YR_TRANS_YR3_RT\r\n",
+      "793: NOT1STGEN_DEATH_YR3_RT\r\n",
+      "794: NOT1STGEN_COMP_ORIG_YR3_RT\r\n",
+      "795: NOT1STGEN_COMP_4YR_TRANS_YR3_RT\r\n",
+      "796: NOT1STGEN_COMP_2YR_TRANS_YR3_RT\r\n",
+      "797: NOT1STGEN_WDRAW_ORIG_YR3_RT\r\n",
+      "798: NOT1STGEN_WDRAW_4YR_TRANS_YR3_RT\r\n",
+      "799: NOT1STGEN_WDRAW_2YR_TRANS_YR3_RT\r\n",
+      "800: NOT1STGEN_ENRL_ORIG_YR3_RT\r\n",
+      "801: NOT1STGEN_ENRL_4YR_TRANS_YR3_RT\r\n",
+      "802: NOT1STGEN_ENRL_2YR_TRANS_YR3_RT\r\n",
+      "803: NOT1STGEN_UNKN_ORIG_YR3_RT\r\n",
+      "804: NOT1STGEN_UNKN_4YR_TRANS_YR3_RT\r\n",
+      "805: NOT1STGEN_UNKN_2YR_TRANS_YR3_RT\r\n",
+      "806: DEATH_YR4_RT\r\n",
+      "807: COMP_ORIG_YR4_RT\r\n",
+      "808: COMP_4YR_TRANS_YR4_RT\r\n",
+      "809: COMP_2YR_TRANS_YR4_RT\r\n",
+      "810: WDRAW_ORIG_YR4_RT\r\n",
+      "811: WDRAW_4YR_TRANS_YR4_RT\r\n",
+      "812: WDRAW_2YR_TRANS_YR4_RT\r\n",
+      "813: ENRL_ORIG_YR4_RT\r\n",
+      "814: ENRL_4YR_TRANS_YR4_RT\r\n",
+      "815: ENRL_2YR_TRANS_YR4_RT\r\n",
+      "816: UNKN_ORIG_YR4_RT\r\n",
+      "817: UNKN_4YR_TRANS_YR4_RT\r\n",
+      "818: UNKN_2YR_TRANS_YR4_RT\r\n",
+      "819: LO_INC_DEATH_YR4_RT\r\n",
+      "820: LO_INC_COMP_ORIG_YR4_RT\r\n",
+      "821: LO_INC_COMP_4YR_TRANS_YR4_RT\r\n",
+      "822: LO_INC_COMP_2YR_TRANS_YR4_RT\r\n",
+      "823: LO_INC_WDRAW_ORIG_YR4_RT\r\n",
+      "824: LO_INC_WDRAW_4YR_TRANS_YR4_RT\r\n",
+      "825: LO_INC_WDRAW_2YR_TRANS_YR4_RT\r\n",
+      "826: LO_INC_ENRL_ORIG_YR4_RT\r\n",
+      "827: LO_INC_ENRL_4YR_TRANS_YR4_RT\r\n",
+      "828: LO_INC_ENRL_2YR_TRANS_YR4_RT\r\n",
+      "829: LO_INC_UNKN_ORIG_YR4_RT\r\n",
+      "830: LO_INC_UNKN_4YR_TRANS_YR4_RT\r\n",
+      "831: LO_INC_UNKN_2YR_TRANS_YR4_RT\r\n",
+      "832: MD_INC_DEATH_YR4_RT\r\n",
+      "833: MD_INC_COMP_ORIG_YR4_RT\r\n",
+      "834: MD_INC_COMP_4YR_TRANS_YR4_RT\r\n",
+      "835: MD_INC_COMP_2YR_TRANS_YR4_RT\r\n",
+      "836: MD_INC_WDRAW_ORIG_YR4_RT\r\n",
+      "837: MD_INC_WDRAW_4YR_TRANS_YR4_RT\r\n",
+      "838: MD_INC_WDRAW_2YR_TRANS_YR4_RT\r\n",
+      "839: MD_INC_ENRL_ORIG_YR4_RT\r\n",
+      "840: MD_INC_ENRL_4YR_TRANS_YR4_RT\r\n",
+      "841: MD_INC_ENRL_2YR_TRANS_YR4_RT\r\n",
+      "842: MD_INC_UNKN_ORIG_YR4_RT\r\n",
+      "843: MD_INC_UNKN_4YR_TRANS_YR4_RT\r\n",
+      "844: MD_INC_UNKN_2YR_TRANS_YR4_RT\r\n",
+      "845: HI_INC_DEATH_YR4_RT\r\n",
+      "846: HI_INC_COMP_ORIG_YR4_RT\r\n",
+      "847: HI_INC_COMP_4YR_TRANS_YR4_RT\r\n",
+      "848: HI_INC_COMP_2YR_TRANS_YR4_RT\r\n",
+      "849: HI_INC_WDRAW_ORIG_YR4_RT\r\n",
+      "850: HI_INC_WDRAW_4YR_TRANS_YR4_RT\r\n",
+      "851: HI_INC_WDRAW_2YR_TRANS_YR4_RT\r\n",
+      "852: HI_INC_ENRL_ORIG_YR4_RT\r\n",
+      "853: HI_INC_ENRL_4YR_TRANS_YR4_RT\r\n",
+      "854: HI_INC_ENRL_2YR_TRANS_YR4_RT\r\n",
+      "855: HI_INC_UNKN_ORIG_YR4_RT\r\n",
+      "856: HI_INC_UNKN_4YR_TRANS_YR4_RT\r\n",
+      "857: HI_INC_UNKN_2YR_TRANS_YR4_RT\r\n",
+      "858: DEP_DEATH_YR4_RT\r\n",
+      "859: DEP_COMP_ORIG_YR4_RT\r\n",
+      "860: DEP_COMP_4YR_TRANS_YR4_RT\r\n",
+      "861: DEP_COMP_2YR_TRANS_YR4_RT\r\n",
+      "862: DEP_WDRAW_ORIG_YR4_RT\r\n",
+      "863: DEP_WDRAW_4YR_TRANS_YR4_RT\r\n",
+      "864: DEP_WDRAW_2YR_TRANS_YR4_RT\r\n",
+      "865: DEP_ENRL_ORIG_YR4_RT\r\n",
+      "866: DEP_ENRL_4YR_TRANS_YR4_RT\r\n",
+      "867: DEP_ENRL_2YR_TRANS_YR4_RT\r\n",
+      "868: DEP_UNKN_ORIG_YR4_RT\r\n",
+      "869: DEP_UNKN_4YR_TRANS_YR4_RT\r\n",
+      "870: DEP_UNKN_2YR_TRANS_YR4_RT\r\n",
+      "871: IND_DEATH_YR4_RT\r\n",
+      "872: IND_COMP_ORIG_YR4_RT\r\n",
+      "873: IND_COMP_4YR_TRANS_YR4_RT\r\n",
+      "874: IND_COMP_2YR_TRANS_YR4_RT\r\n",
+      "875: IND_WDRAW_ORIG_YR4_RT\r\n",
+      "876: IND_WDRAW_4YR_TRANS_YR4_RT\r\n",
+      "877: IND_WDRAW_2YR_TRANS_YR4_RT\r\n",
+      "878: IND_ENRL_ORIG_YR4_RT\r\n",
+      "879: IND_ENRL_4YR_TRANS_YR4_RT\r\n",
+      "880: IND_ENRL_2YR_TRANS_YR4_RT\r\n",
+      "881: IND_UNKN_ORIG_YR4_RT\r\n",
+      "882: IND_UNKN_4YR_TRANS_YR4_RT\r\n",
+      "883: IND_UNKN_2YR_TRANS_YR4_RT\r\n",
+      "884: FEMALE_DEATH_YR4_RT\r\n",
+      "885: FEMALE_COMP_ORIG_YR4_RT\r\n",
+      "886: FEMALE_COMP_4YR_TRANS_YR4_RT\r\n",
+      "887: FEMALE_COMP_2YR_TRANS_YR4_RT\r\n",
+      "888: FEMALE_WDRAW_ORIG_YR4_RT\r\n",
+      "889: FEMALE_WDRAW_4YR_TRANS_YR4_RT\r\n",
+      "890: FEMALE_WDRAW_2YR_TRANS_YR4_RT\r\n",
+      "891: FEMALE_ENRL_ORIG_YR4_RT\r\n",
+      "892: FEMALE_ENRL_4YR_TRANS_YR4_RT\r\n",
+      "893: FEMALE_ENRL_2YR_TRANS_YR4_RT\r\n",
+      "894: FEMALE_UNKN_ORIG_YR4_RT\r\n",
+      "895: FEMALE_UNKN_4YR_TRANS_YR4_RT\r\n",
+      "896: FEMALE_UNKN_2YR_TRANS_YR4_RT\r\n",
+      "897: MALE_DEATH_YR4_RT\r\n",
+      "898: MALE_COMP_ORIG_YR4_RT\r\n",
+      "899: MALE_COMP_4YR_TRANS_YR4_RT\r\n",
+      "900: MALE_COMP_2YR_TRANS_YR4_RT\r\n",
+      "901: MALE_WDRAW_ORIG_YR4_RT\r\n",
+      "902: MALE_WDRAW_4YR_TRANS_YR4_RT\r\n",
+      "903: MALE_WDRAW_2YR_TRANS_YR4_RT\r\n",
+      "904: MALE_ENRL_ORIG_YR4_RT\r\n",
+      "905: MALE_ENRL_4YR_TRANS_YR4_RT\r\n",
+      "906: MALE_ENRL_2YR_TRANS_YR4_RT\r\n",
+      "907: MALE_UNKN_ORIG_YR4_RT\r\n",
+      "908: MALE_UNKN_4YR_TRANS_YR4_RT\r\n",
+      "909: MALE_UNKN_2YR_TRANS_YR4_RT\r\n",
+      "910: PELL_DEATH_YR4_RT\r\n",
+      "911: PELL_COMP_ORIG_YR4_RT\r\n",
+      "912: PELL_COMP_4YR_TRANS_YR4_RT\r\n",
+      "913: PELL_COMP_2YR_TRANS_YR4_RT\r\n",
+      "914: PELL_WDRAW_ORIG_YR4_RT\r\n",
+      "915: PELL_WDRAW_4YR_TRANS_YR4_RT\r\n",
+      "916: PELL_WDRAW_2YR_TRANS_YR4_RT\r\n",
+      "917: PELL_ENRL_ORIG_YR4_RT\r\n",
+      "918: PELL_ENRL_4YR_TRANS_YR4_RT\r\n",
+      "919: PELL_ENRL_2YR_TRANS_YR4_RT\r\n",
+      "920: PELL_UNKN_ORIG_YR4_RT\r\n",
+      "921: PELL_UNKN_4YR_TRANS_YR4_RT\r\n",
+      "922: PELL_UNKN_2YR_TRANS_YR4_RT\r\n",
+      "923: NOPELL_DEATH_YR4_RT\r\n",
+      "924: NOPELL_COMP_ORIG_YR4_RT\r\n",
+      "925: NOPELL_COMP_4YR_TRANS_YR4_RT\r\n",
+      "926: NOPELL_COMP_2YR_TRANS_YR4_RT\r\n",
+      "927: NOPELL_WDRAW_ORIG_YR4_RT\r\n",
+      "928: NOPELL_WDRAW_4YR_TRANS_YR4_RT\r\n",
+      "929: NOPELL_WDRAW_2YR_TRANS_YR4_RT\r\n",
+      "930: NOPELL_ENRL_ORIG_YR4_RT\r\n",
+      "931: NOPELL_ENRL_4YR_TRANS_YR4_RT\r\n",
+      "932: NOPELL_ENRL_2YR_TRANS_YR4_RT\r\n",
+      "933: NOPELL_UNKN_ORIG_YR4_RT\r\n",
+      "934: NOPELL_UNKN_4YR_TRANS_YR4_RT\r\n",
+      "935: NOPELL_UNKN_2YR_TRANS_YR4_RT\r\n",
+      "936: LOAN_DEATH_YR4_RT\r\n",
+      "937: LOAN_COMP_ORIG_YR4_RT\r\n",
+      "938: LOAN_COMP_4YR_TRANS_YR4_RT\r\n",
+      "939: LOAN_COMP_2YR_TRANS_YR4_RT\r\n",
+      "940: LOAN_WDRAW_ORIG_YR4_RT\r\n",
+      "941: LOAN_WDRAW_4YR_TRANS_YR4_RT\r\n",
+      "942: LOAN_WDRAW_2YR_TRANS_YR4_RT\r\n",
+      "943: LOAN_ENRL_ORIG_YR4_RT\r\n",
+      "944: LOAN_ENRL_4YR_TRANS_YR4_RT\r\n",
+      "945: LOAN_ENRL_2YR_TRANS_YR4_RT\r\n",
+      "946: LOAN_UNKN_ORIG_YR4_RT\r\n",
+      "947: LOAN_UNKN_4YR_TRANS_YR4_RT\r\n",
+      "948: LOAN_UNKN_2YR_TRANS_YR4_RT\r\n",
+      "949: NOLOAN_DEATH_YR4_RT\r\n",
+      "950: NOLOAN_COMP_ORIG_YR4_RT\r\n",
+      "951: NOLOAN_COMP_4YR_TRANS_YR4_RT\r\n",
+      "952: NOLOAN_COMP_2YR_TRANS_YR4_RT\r\n",
+      "953: NOLOAN_WDRAW_ORIG_YR4_RT\r\n",
+      "954: NOLOAN_WDRAW_4YR_TRANS_YR4_RT\r\n",
+      "955: NOLOAN_WDRAW_2YR_TRANS_YR4_RT\r\n",
+      "956: NOLOAN_ENRL_ORIG_YR4_RT\r\n",
+      "957: NOLOAN_ENRL_4YR_TRANS_YR4_RT\r\n",
+      "958: NOLOAN_ENRL_2YR_TRANS_YR4_RT\r\n",
+      "959: NOLOAN_UNKN_ORIG_YR4_RT\r\n",
+      "960: NOLOAN_UNKN_4YR_TRANS_YR4_RT\r\n",
+      "961: NOLOAN_UNKN_2YR_TRANS_YR4_RT\r\n",
+      "962: FIRSTGEN_DEATH_YR4_RT\r\n",
+      "963: FIRSTGEN_COMP_ORIG_YR4_RT\r\n",
+      "964: FIRSTGEN_COMP_4YR_TRANS_YR4_RT\r\n",
+      "965: FIRSTGEN_COMP_2YR_TRANS_YR4_RT\r\n",
+      "966: FIRSTGEN_WDRAW_ORIG_YR4_RT\r\n",
+      "967: FIRSTGEN_WDRAW_4YR_TRANS_YR4_RT\r\n",
+      "968: FIRSTGEN_WDRAW_2YR_TRANS_YR4_RT\r\n",
+      "969: FIRSTGEN_ENRL_ORIG_YR4_RT\r\n",
+      "970: FIRSTGEN_ENRL_4YR_TRANS_YR4_RT\r\n",
+      "971: FIRSTGEN_ENRL_2YR_TRANS_YR4_RT\r\n",
+      "972: FIRSTGEN_UNKN_ORIG_YR4_RT\r\n",
+      "973: FIRSTGEN_UNKN_4YR_TRANS_YR4_RT\r\n",
+      "974: FIRSTGEN_UNKN_2YR_TRANS_YR4_RT\r\n",
+      "975: NOT1STGEN_DEATH_YR4_RT\r\n",
+      "976: NOT1STGEN_COMP_ORIG_YR4_RT\r\n",
+      "977: NOT1STGEN_COMP_4YR_TRANS_YR4_RT\r\n",
+      "978: NOT1STGEN_COMP_2YR_TRANS_YR4_RT\r\n",
+      "979: NOT1STGEN_WDRAW_ORIG_YR4_RT\r\n",
+      "980: NOT1STGEN_WDRAW_4YR_TRANS_YR4_RT\r\n",
+      "981: NOT1STGEN_WDRAW_2YR_TRANS_YR4_RT\r\n",
+      "982: NOT1STGEN_ENRL_ORIG_YR4_RT\r\n",
+      "983: NOT1STGEN_ENRL_4YR_TRANS_YR4_RT\r\n",
+      "984: NOT1STGEN_ENRL_2YR_TRANS_YR4_RT\r\n",
+      "985: NOT1STGEN_UNKN_ORIG_YR4_RT\r\n",
+      "986: NOT1STGEN_UNKN_4YR_TRANS_YR4_RT\r\n",
+      "987: NOT1STGEN_UNKN_2YR_TRANS_YR4_RT\r\n",
+      "988: DEATH_YR6_RT\r\n",
+      "989: COMP_ORIG_YR6_RT\r\n",
+      "990: COMP_4YR_TRANS_YR6_RT\r\n",
+      "991: COMP_2YR_TRANS_YR6_RT\r\n",
+      "992: WDRAW_ORIG_YR6_RT\r\n",
+      "993: WDRAW_4YR_TRANS_YR6_RT\r\n",
+      "994: WDRAW_2YR_TRANS_YR6_RT\r\n",
+      "995: ENRL_ORIG_YR6_RT\r\n",
+      "996: ENRL_4YR_TRANS_YR6_RT\r\n",
+      "997: ENRL_2YR_TRANS_YR6_RT\r\n",
+      "998: UNKN_ORIG_YR6_RT\r\n",
+      "999: UNKN_4YR_TRANS_YR6_RT\r\n",
+      "1000: UNKN_2YR_TRANS_YR6_RT\r\n",
+      "1001: LO_INC_DEATH_YR6_RT\r\n",
+      "1002: LO_INC_COMP_ORIG_YR6_RT\r\n",
+      "1003: LO_INC_COMP_4YR_TRANS_YR6_RT\r\n",
+      "1004: LO_INC_COMP_2YR_TRANS_YR6_RT\r\n",
+      "1005: LO_INC_WDRAW_ORIG_YR6_RT\r\n",
+      "1006: LO_INC_WDRAW_4YR_TRANS_YR6_RT\r\n",
+      "1007: LO_INC_WDRAW_2YR_TRANS_YR6_RT\r\n",
+      "1008: LO_INC_ENRL_ORIG_YR6_RT\r\n",
+      "1009: LO_INC_ENRL_4YR_TRANS_YR6_RT\r\n",
+      "1010: LO_INC_ENRL_2YR_TRANS_YR6_RT\r\n",
+      "1011: LO_INC_UNKN_ORIG_YR6_RT\r\n",
+      "1012: LO_INC_UNKN_4YR_TRANS_YR6_RT\r\n",
+      "1013: LO_INC_UNKN_2YR_TRANS_YR6_RT\r\n",
+      "1014: MD_INC_DEATH_YR6_RT\r\n",
+      "1015: MD_INC_COMP_ORIG_YR6_RT\r\n",
+      "1016: MD_INC_COMP_4YR_TRANS_YR6_RT\r\n",
+      "1017: MD_INC_COMP_2YR_TRANS_YR6_RT\r\n",
+      "1018: MD_INC_WDRAW_ORIG_YR6_RT\r\n",
+      "1019: MD_INC_WDRAW_4YR_TRANS_YR6_RT\r\n",
+      "1020: MD_INC_WDRAW_2YR_TRANS_YR6_RT\r\n",
+      "1021: MD_INC_ENRL_ORIG_YR6_RT\r\n",
+      "1022: MD_INC_ENRL_4YR_TRANS_YR6_RT\r\n",
+      "1023: MD_INC_ENRL_2YR_TRANS_YR6_RT\r\n",
+      "1024: MD_INC_UNKN_ORIG_YR6_RT\r\n",
+      "1025: MD_INC_UNKN_4YR_TRANS_YR6_RT\r\n",
+      "1026: MD_INC_UNKN_2YR_TRANS_YR6_RT\r\n",
+      "1027: HI_INC_DEATH_YR6_RT\r\n",
+      "1028: HI_INC_COMP_ORIG_YR6_RT\r\n",
+      "1029: HI_INC_COMP_4YR_TRANS_YR6_RT\r\n",
+      "1030: HI_INC_COMP_2YR_TRANS_YR6_RT\r\n",
+      "1031: HI_INC_WDRAW_ORIG_YR6_RT\r\n",
+      "1032: HI_INC_WDRAW_4YR_TRANS_YR6_RT\r\n",
+      "1033: HI_INC_WDRAW_2YR_TRANS_YR6_RT\r\n",
+      "1034: HI_INC_ENRL_ORIG_YR6_RT\r\n",
+      "1035: HI_INC_ENRL_4YR_TRANS_YR6_RT\r\n",
+      "1036: HI_INC_ENRL_2YR_TRANS_YR6_RT\r\n",
+      "1037: HI_INC_UNKN_ORIG_YR6_RT\r\n",
+      "1038: HI_INC_UNKN_4YR_TRANS_YR6_RT\r\n",
+      "1039: HI_INC_UNKN_2YR_TRANS_YR6_RT\r\n",
+      "1040: DEP_DEATH_YR6_RT\r\n",
+      "1041: DEP_COMP_ORIG_YR6_RT\r\n",
+      "1042: DEP_COMP_4YR_TRANS_YR6_RT\r\n",
+      "1043: DEP_COMP_2YR_TRANS_YR6_RT\r\n",
+      "1044: DEP_WDRAW_ORIG_YR6_RT\r\n",
+      "1045: DEP_WDRAW_4YR_TRANS_YR6_RT\r\n",
+      "1046: DEP_WDRAW_2YR_TRANS_YR6_RT\r\n",
+      "1047: DEP_ENRL_ORIG_YR6_RT\r\n",
+      "1048: DEP_ENRL_4YR_TRANS_YR6_RT\r\n",
+      "1049: DEP_ENRL_2YR_TRANS_YR6_RT\r\n",
+      "1050: DEP_UNKN_ORIG_YR6_RT\r\n",
+      "1051: DEP_UNKN_4YR_TRANS_YR6_RT\r\n",
+      "1052: DEP_UNKN_2YR_TRANS_YR6_RT\r\n",
+      "1053: IND_DEATH_YR6_RT\r\n",
+      "1054: IND_COMP_ORIG_YR6_RT\r\n",
+      "1055: IND_COMP_4YR_TRANS_YR6_RT\r\n",
+      "1056: IND_COMP_2YR_TRANS_YR6_RT\r\n",
+      "1057: IND_WDRAW_ORIG_YR6_RT\r\n",
+      "1058: IND_WDRAW_4YR_TRANS_YR6_RT\r\n",
+      "1059: IND_WDRAW_2YR_TRANS_YR6_RT\r\n",
+      "1060: IND_ENRL_ORIG_YR6_RT\r\n",
+      "1061: IND_ENRL_4YR_TRANS_YR6_RT\r\n",
+      "1062: IND_ENRL_2YR_TRANS_YR6_RT\r\n",
+      "1063: IND_UNKN_ORIG_YR6_RT\r\n",
+      "1064: IND_UNKN_4YR_TRANS_YR6_RT\r\n",
+      "1065: IND_UNKN_2YR_TRANS_YR6_RT\r\n",
+      "1066: FEMALE_DEATH_YR6_RT\r\n",
+      "1067: FEMALE_COMP_ORIG_YR6_RT\r\n",
+      "1068: FEMALE_COMP_4YR_TRANS_YR6_RT\r\n",
+      "1069: FEMALE_COMP_2YR_TRANS_YR6_RT\r\n",
+      "1070: FEMALE_WDRAW_ORIG_YR6_RT\r\n",
+      "1071: FEMALE_WDRAW_4YR_TRANS_YR6_RT\r\n",
+      "1072: FEMALE_WDRAW_2YR_TRANS_YR6_RT\r\n",
+      "1073: FEMALE_ENRL_ORIG_YR6_RT\r\n",
+      "1074: FEMALE_ENRL_4YR_TRANS_YR6_RT\r\n",
+      "1075: FEMALE_ENRL_2YR_TRANS_YR6_RT\r\n",
+      "1076: FEMALE_UNKN_ORIG_YR6_RT\r\n",
+      "1077: FEMALE_UNKN_4YR_TRANS_YR6_RT\r\n",
+      "1078: FEMALE_UNKN_2YR_TRANS_YR6_RT\r\n",
+      "1079: MALE_DEATH_YR6_RT\r\n",
+      "1080: MALE_COMP_ORIG_YR6_RT\r\n",
+      "1081: MALE_COMP_4YR_TRANS_YR6_RT\r\n",
+      "1082: MALE_COMP_2YR_TRANS_YR6_RT\r\n",
+      "1083: MALE_WDRAW_ORIG_YR6_RT\r\n",
+      "1084: MALE_WDRAW_4YR_TRANS_YR6_RT\r\n",
+      "1085: MALE_WDRAW_2YR_TRANS_YR6_RT\r\n",
+      "1086: MALE_ENRL_ORIG_YR6_RT\r\n",
+      "1087: MALE_ENRL_4YR_TRANS_YR6_RT\r\n",
+      "1088: MALE_ENRL_2YR_TRANS_YR6_RT\r\n",
+      "1089: MALE_UNKN_ORIG_YR6_RT\r\n",
+      "1090: MALE_UNKN_4YR_TRANS_YR6_RT\r\n",
+      "1091: MALE_UNKN_2YR_TRANS_YR6_RT\r\n",
+      "1092: PELL_DEATH_YR6_RT\r\n",
+      "1093: PELL_COMP_ORIG_YR6_RT\r\n",
+      "1094: PELL_COMP_4YR_TRANS_YR6_RT\r\n",
+      "1095: PELL_COMP_2YR_TRANS_YR6_RT\r\n",
+      "1096: PELL_WDRAW_ORIG_YR6_RT\r\n",
+      "1097: PELL_WDRAW_4YR_TRANS_YR6_RT\r\n",
+      "1098: PELL_WDRAW_2YR_TRANS_YR6_RT\r\n",
+      "1099: PELL_ENRL_ORIG_YR6_RT\r\n",
+      "1100: PELL_ENRL_4YR_TRANS_YR6_RT\r\n",
+      "1101: PELL_ENRL_2YR_TRANS_YR6_RT\r\n",
+      "1102: PELL_UNKN_ORIG_YR6_RT\r\n",
+      "1103: PELL_UNKN_4YR_TRANS_YR6_RT\r\n",
+      "1104: PELL_UNKN_2YR_TRANS_YR6_RT\r\n",
+      "1105: NOPELL_DEATH_YR6_RT\r\n",
+      "1106: NOPELL_COMP_ORIG_YR6_RT\r\n",
+      "1107: NOPELL_COMP_4YR_TRANS_YR6_RT\r\n",
+      "1108: NOPELL_COMP_2YR_TRANS_YR6_RT\r\n",
+      "1109: NOPELL_WDRAW_ORIG_YR6_RT\r\n",
+      "1110: NOPELL_WDRAW_4YR_TRANS_YR6_RT\r\n",
+      "1111: NOPELL_WDRAW_2YR_TRANS_YR6_RT\r\n",
+      "1112: NOPELL_ENRL_ORIG_YR6_RT\r\n",
+      "1113: NOPELL_ENRL_4YR_TRANS_YR6_RT\r\n",
+      "1114: NOPELL_ENRL_2YR_TRANS_YR6_RT\r\n",
+      "1115: NOPELL_UNKN_ORIG_YR6_RT\r\n",
+      "1116: NOPELL_UNKN_4YR_TRANS_YR6_RT\r\n",
+      "1117: NOPELL_UNKN_2YR_TRANS_YR6_RT\r\n",
+      "1118: LOAN_DEATH_YR6_RT\r\n",
+      "1119: LOAN_COMP_ORIG_YR6_RT\r\n",
+      "1120: LOAN_COMP_4YR_TRANS_YR6_RT\r\n",
+      "1121: LOAN_COMP_2YR_TRANS_YR6_RT\r\n",
+      "1122: LOAN_WDRAW_ORIG_YR6_RT\r\n",
+      "1123: LOAN_WDRAW_4YR_TRANS_YR6_RT\r\n",
+      "1124: LOAN_WDRAW_2YR_TRANS_YR6_RT\r\n",
+      "1125: LOAN_ENRL_ORIG_YR6_RT\r\n",
+      "1126: LOAN_ENRL_4YR_TRANS_YR6_RT\r\n",
+      "1127: LOAN_ENRL_2YR_TRANS_YR6_RT\r\n",
+      "1128: LOAN_UNKN_ORIG_YR6_RT\r\n",
+      "1129: LOAN_UNKN_4YR_TRANS_YR6_RT\r\n",
+      "1130: LOAN_UNKN_2YR_TRANS_YR6_RT\r\n",
+      "1131: NOLOAN_DEATH_YR6_RT\r\n",
+      "1132: NOLOAN_COMP_ORIG_YR6_RT\r\n",
+      "1133: NOLOAN_COMP_4YR_TRANS_YR6_RT\r\n",
+      "1134: NOLOAN_COMP_2YR_TRANS_YR6_RT\r\n",
+      "1135: NOLOAN_WDRAW_ORIG_YR6_RT\r\n",
+      "1136: NOLOAN_WDRAW_4YR_TRANS_YR6_RT\r\n",
+      "1137: NOLOAN_WDRAW_2YR_TRANS_YR6_RT\r\n",
+      "1138: NOLOAN_ENRL_ORIG_YR6_RT\r\n",
+      "1139: NOLOAN_ENRL_4YR_TRANS_YR6_RT\r\n",
+      "1140: NOLOAN_ENRL_2YR_TRANS_YR6_RT\r\n",
+      "1141: NOLOAN_UNKN_ORIG_YR6_RT\r\n",
+      "1142: NOLOAN_UNKN_4YR_TRANS_YR6_RT\r\n",
+      "1143: NOLOAN_UNKN_2YR_TRANS_YR6_RT\r\n",
+      "1144: FIRSTGEN_DEATH_YR6_RT\r\n",
+      "1145: FIRSTGEN_COMP_ORIG_YR6_RT\r\n",
+      "1146: FIRSTGEN_COMP_4YR_TRANS_YR6_RT\r\n",
+      "1147: FIRSTGEN_COMP_2YR_TRANS_YR6_RT\r\n",
+      "1148: FIRSTGEN_WDRAW_ORIG_YR6_RT\r\n",
+      "1149: FIRSTGEN_WDRAW_4YR_TRANS_YR6_RT\r\n",
+      "1150: FIRSTGEN_WDRAW_2YR_TRANS_YR6_RT\r\n",
+      "1151: FIRSTGEN_ENRL_ORIG_YR6_RT\r\n",
+      "1152: FIRSTGEN_ENRL_4YR_TRANS_YR6_RT\r\n",
+      "1153: FIRSTGEN_ENRL_2YR_TRANS_YR6_RT\r\n",
+      "1154: FIRSTGEN_UNKN_ORIG_YR6_RT\r\n",
+      "1155: FIRSTGEN_UNKN_4YR_TRANS_YR6_RT\r\n",
+      "1156: FIRSTGEN_UNKN_2YR_TRANS_YR6_RT\r\n",
+      "1157: NOT1STGEN_DEATH_YR6_RT\r\n",
+      "1158: NOT1STGEN_COMP_ORIG_YR6_RT\r\n",
+      "1159: NOT1STGEN_COMP_4YR_TRANS_YR6_RT\r\n",
+      "1160: NOT1STGEN_COMP_2YR_TRANS_YR6_RT\r\n",
+      "1161: NOT1STGEN_WDRAW_ORIG_YR6_RT\r\n",
+      "1162: NOT1STGEN_WDRAW_4YR_TRANS_YR6_RT\r\n",
+      "1163: NOT1STGEN_WDRAW_2YR_TRANS_YR6_RT\r\n",
+      "1164: NOT1STGEN_ENRL_ORIG_YR6_RT\r\n",
+      "1165: NOT1STGEN_ENRL_4YR_TRANS_YR6_RT\r\n",
+      "1166: NOT1STGEN_ENRL_2YR_TRANS_YR6_RT\r\n",
+      "1167: NOT1STGEN_UNKN_ORIG_YR6_RT\r\n",
+      "1168: NOT1STGEN_UNKN_4YR_TRANS_YR6_RT\r\n",
+      "1169: NOT1STGEN_UNKN_2YR_TRANS_YR6_RT\r\n",
+      "1170: DEATH_YR8_RT\r\n",
+      "1171: COMP_ORIG_YR8_RT\r\n",
+      "1172: COMP_4YR_TRANS_YR8_RT\r\n",
+      "1173: COMP_2YR_TRANS_YR8_RT\r\n",
+      "1174: WDRAW_ORIG_YR8_RT\r\n",
+      "1175: WDRAW_4YR_TRANS_YR8_RT\r\n",
+      "1176: WDRAW_2YR_TRANS_YR8_RT\r\n",
+      "1177: ENRL_ORIG_YR8_RT\r\n",
+      "1178: ENRL_4YR_TRANS_YR8_RT\r\n",
+      "1179: ENRL_2YR_TRANS_YR8_RT\r\n",
+      "1180: UNKN_ORIG_YR8_RT\r\n",
+      "1181: UNKN_4YR_TRANS_YR8_RT\r\n",
+      "1182: UNKN_2YR_TRANS_YR8_RT\r\n",
+      "1183: LO_INC_DEATH_YR8_RT\r\n",
+      "1184: LO_INC_COMP_ORIG_YR8_RT\r\n",
+      "1185: LO_INC_COMP_4YR_TRANS_YR8_RT\r\n",
+      "1186: LO_INC_COMP_2YR_TRANS_YR8_RT\r\n",
+      "1187: LO_INC_WDRAW_ORIG_YR8_RT\r\n",
+      "1188: LO_INC_WDRAW_4YR_TRANS_YR8_RT\r\n",
+      "1189: LO_INC_WDRAW_2YR_TRANS_YR8_RT\r\n",
+      "1190: LO_INC_ENRL_ORIG_YR8_RT\r\n",
+      "1191: LO_INC_ENRL_4YR_TRANS_YR8_RT\r\n",
+      "1192: LO_INC_ENRL_2YR_TRANS_YR8_RT\r\n",
+      "1193: LO_INC_UNKN_ORIG_YR8_RT\r\n",
+      "1194: LO_INC_UNKN_4YR_TRANS_YR8_RT\r\n",
+      "1195: LO_INC_UNKN_2YR_TRANS_YR8_RT\r\n",
+      "1196: MD_INC_DEATH_YR8_RT\r\n",
+      "1197: MD_INC_COMP_ORIG_YR8_RT\r\n",
+      "1198: MD_INC_COMP_4YR_TRANS_YR8_RT\r\n",
+      "1199: MD_INC_COMP_2YR_TRANS_YR8_RT\r\n",
+      "1200: MD_INC_WDRAW_ORIG_YR8_RT\r\n",
+      "1201: MD_INC_WDRAW_4YR_TRANS_YR8_RT\r\n",
+      "1202: MD_INC_WDRAW_2YR_TRANS_YR8_RT\r\n",
+      "1203: MD_INC_ENRL_ORIG_YR8_RT\r\n",
+      "1204: MD_INC_ENRL_4YR_TRANS_YR8_RT\r\n",
+      "1205: MD_INC_ENRL_2YR_TRANS_YR8_RT\r\n",
+      "1206: MD_INC_UNKN_ORIG_YR8_RT\r\n",
+      "1207: MD_INC_UNKN_4YR_TRANS_YR8_RT\r\n",
+      "1208: MD_INC_UNKN_2YR_TRANS_YR8_RT\r\n",
+      "1209: HI_INC_DEATH_YR8_RT\r\n",
+      "1210: HI_INC_COMP_ORIG_YR8_RT\r\n",
+      "1211: HI_INC_COMP_4YR_TRANS_YR8_RT\r\n",
+      "1212: HI_INC_COMP_2YR_TRANS_YR8_RT\r\n",
+      "1213: HI_INC_WDRAW_ORIG_YR8_RT\r\n",
+      "1214: HI_INC_WDRAW_4YR_TRANS_YR8_RT\r\n",
+      "1215: HI_INC_WDRAW_2YR_TRANS_YR8_RT\r\n",
+      "1216: HI_INC_ENRL_ORIG_YR8_RT\r\n",
+      "1217: HI_INC_ENRL_4YR_TRANS_YR8_RT\r\n",
+      "1218: HI_INC_ENRL_2YR_TRANS_YR8_RT\r\n",
+      "1219: HI_INC_UNKN_ORIG_YR8_RT\r\n",
+      "1220: HI_INC_UNKN_4YR_TRANS_YR8_RT\r\n",
+      "1221: HI_INC_UNKN_2YR_TRANS_YR8_RT\r\n",
+      "1222: DEP_DEATH_YR8_RT\r\n",
+      "1223: DEP_COMP_ORIG_YR8_RT\r\n",
+      "1224: DEP_COMP_4YR_TRANS_YR8_RT\r\n",
+      "1225: DEP_COMP_2YR_TRANS_YR8_RT\r\n",
+      "1226: DEP_WDRAW_ORIG_YR8_RT\r\n",
+      "1227: DEP_WDRAW_4YR_TRANS_YR8_RT\r\n",
+      "1228: DEP_WDRAW_2YR_TRANS_YR8_RT\r\n",
+      "1229: DEP_ENRL_ORIG_YR8_RT\r\n",
+      "1230: DEP_ENRL_4YR_TRANS_YR8_RT\r\n",
+      "1231: DEP_ENRL_2YR_TRANS_YR8_RT\r\n",
+      "1232: DEP_UNKN_ORIG_YR8_RT\r\n",
+      "1233: DEP_UNKN_4YR_TRANS_YR8_RT\r\n",
+      "1234: DEP_UNKN_2YR_TRANS_YR8_RT\r\n",
+      "1235: IND_DEATH_YR8_RT\r\n",
+      "1236: IND_COMP_ORIG_YR8_RT\r\n",
+      "1237: IND_COMP_4YR_TRANS_YR8_RT\r\n",
+      "1238: IND_COMP_2YR_TRANS_YR8_RT\r\n",
+      "1239: IND_WDRAW_ORIG_YR8_RT\r\n",
+      "1240: IND_WDRAW_4YR_TRANS_YR8_RT\r\n",
+      "1241: IND_WDRAW_2YR_TRANS_YR8_RT\r\n",
+      "1242: IND_ENRL_ORIG_YR8_RT\r\n",
+      "1243: IND_ENRL_4YR_TRANS_YR8_RT\r\n",
+      "1244: IND_ENRL_2YR_TRANS_YR8_RT\r\n",
+      "1245: IND_UNKN_ORIG_YR8_RT\r\n",
+      "1246: IND_UNKN_4YR_TRANS_YR8_RT\r\n",
+      "1247: IND_UNKN_2YR_TRANS_YR8_RT\r\n",
+      "1248: FEMALE_DEATH_YR8_RT\r\n",
+      "1249: FEMALE_COMP_ORIG_YR8_RT\r\n",
+      "1250: FEMALE_COMP_4YR_TRANS_YR8_RT\r\n",
+      "1251: FEMALE_COMP_2YR_TRANS_YR8_RT\r\n",
+      "1252: FEMALE_WDRAW_ORIG_YR8_RT\r\n",
+      "1253: FEMALE_WDRAW_4YR_TRANS_YR8_RT\r\n",
+      "1254: FEMALE_WDRAW_2YR_TRANS_YR8_RT\r\n",
+      "1255: FEMALE_ENRL_ORIG_YR8_RT\r\n",
+      "1256: FEMALE_ENRL_4YR_TRANS_YR8_RT\r\n",
+      "1257: FEMALE_ENRL_2YR_TRANS_YR8_RT\r\n",
+      "1258: FEMALE_UNKN_ORIG_YR8_RT\r\n",
+      "1259: FEMALE_UNKN_4YR_TRANS_YR8_RT\r\n",
+      "1260: FEMALE_UNKN_2YR_TRANS_YR8_RT\r\n",
+      "1261: MALE_DEATH_YR8_RT\r\n",
+      "1262: MALE_COMP_ORIG_YR8_RT\r\n",
+      "1263: MALE_COMP_4YR_TRANS_YR8_RT\r\n",
+      "1264: MALE_COMP_2YR_TRANS_YR8_RT\r\n",
+      "1265: MALE_WDRAW_ORIG_YR8_RT\r\n",
+      "1266: MALE_WDRAW_4YR_TRANS_YR8_RT\r\n",
+      "1267: MALE_WDRAW_2YR_TRANS_YR8_RT\r\n",
+      "1268: MALE_ENRL_ORIG_YR8_RT\r\n",
+      "1269: MALE_ENRL_4YR_TRANS_YR8_RT\r\n",
+      "1270: MALE_ENRL_2YR_TRANS_YR8_RT\r\n",
+      "1271: MALE_UNKN_ORIG_YR8_RT\r\n",
+      "1272: MALE_UNKN_4YR_TRANS_YR8_RT\r\n",
+      "1273: MALE_UNKN_2YR_TRANS_YR8_RT\r\n",
+      "1274: PELL_DEATH_YR8_RT\r\n",
+      "1275: PELL_COMP_ORIG_YR8_RT\r\n",
+      "1276: PELL_COMP_4YR_TRANS_YR8_RT\r\n",
+      "1277: PELL_COMP_2YR_TRANS_YR8_RT\r\n",
+      "1278: PELL_WDRAW_ORIG_YR8_RT\r\n",
+      "1279: PELL_WDRAW_4YR_TRANS_YR8_RT\r\n",
+      "1280: PELL_WDRAW_2YR_TRANS_YR8_RT\r\n",
+      "1281: PELL_ENRL_ORIG_YR8_RT\r\n",
+      "1282: PELL_ENRL_4YR_TRANS_YR8_RT\r\n",
+      "1283: PELL_ENRL_2YR_TRANS_YR8_RT\r\n",
+      "1284: PELL_UNKN_ORIG_YR8_RT\r\n",
+      "1285: PELL_UNKN_4YR_TRANS_YR8_RT\r\n",
+      "1286: PELL_UNKN_2YR_TRANS_YR8_RT\r\n",
+      "1287: NOPELL_DEATH_YR8_RT\r\n",
+      "1288: NOPELL_COMP_ORIG_YR8_RT\r\n",
+      "1289: NOPELL_COMP_4YR_TRANS_YR8_RT\r\n",
+      "1290: NOPELL_COMP_2YR_TRANS_YR8_RT\r\n",
+      "1291: NOPELL_WDRAW_ORIG_YR8_RT\r\n",
+      "1292: NOPELL_WDRAW_4YR_TRANS_YR8_RT\r\n",
+      "1293: NOPELL_WDRAW_2YR_TRANS_YR8_RT\r\n",
+      "1294: NOPELL_ENRL_ORIG_YR8_RT\r\n",
+      "1295: NOPELL_ENRL_4YR_TRANS_YR8_RT\r\n",
+      "1296: NOPELL_ENRL_2YR_TRANS_YR8_RT\r\n",
+      "1297: NOPELL_UNKN_ORIG_YR8_RT\r\n",
+      "1298: NOPELL_UNKN_4YR_TRANS_YR8_RT\r\n",
+      "1299: NOPELL_UNKN_2YR_TRANS_YR8_RT\r\n",
+      "1300: LOAN_DEATH_YR8_RT\r\n",
+      "1301: LOAN_COMP_ORIG_YR8_RT\r\n",
+      "1302: LOAN_COMP_4YR_TRANS_YR8_RT\r\n",
+      "1303: LOAN_COMP_2YR_TRANS_YR8_RT\r\n",
+      "1304: LOAN_WDRAW_ORIG_YR8_RT\r\n",
+      "1305: LOAN_WDRAW_4YR_TRANS_YR8_RT\r\n",
+      "1306: LOAN_WDRAW_2YR_TRANS_YR8_RT\r\n",
+      "1307: LOAN_ENRL_ORIG_YR8_RT\r\n",
+      "1308: LOAN_ENRL_4YR_TRANS_YR8_RT\r\n",
+      "1309: LOAN_ENRL_2YR_TRANS_YR8_RT\r\n",
+      "1310: LOAN_UNKN_ORIG_YR8_RT\r\n",
+      "1311: LOAN_UNKN_4YR_TRANS_YR8_RT\r\n",
+      "1312: LOAN_UNKN_2YR_TRANS_YR8_RT\r\n",
+      "1313: NOLOAN_DEATH_YR8_RT\r\n",
+      "1314: NOLOAN_COMP_ORIG_YR8_RT\r\n",
+      "1315: NOLOAN_COMP_4YR_TRANS_YR8_RT\r\n",
+      "1316: NOLOAN_COMP_2YR_TRANS_YR8_RT\r\n",
+      "1317: NOLOAN_WDRAW_ORIG_YR8_RT\r\n",
+      "1318: NOLOAN_WDRAW_4YR_TRANS_YR8_RT\r\n",
+      "1319: NOLOAN_WDRAW_2YR_TRANS_YR8_RT\r\n",
+      "1320: NOLOAN_ENRL_ORIG_YR8_RT\r\n",
+      "1321: NOLOAN_ENRL_4YR_TRANS_YR8_RT\r\n",
+      "1322: NOLOAN_ENRL_2YR_TRANS_YR8_RT\r\n",
+      "1323: NOLOAN_UNKN_ORIG_YR8_RT\r\n",
+      "1324: NOLOAN_UNKN_4YR_TRANS_YR8_RT\r\n",
+      "1325: NOLOAN_UNKN_2YR_TRANS_YR8_RT\r\n",
+      "1326: FIRSTGEN_DEATH_YR8_RT\r\n",
+      "1327: FIRSTGEN_COMP_ORIG_YR8_RT\r\n",
+      "1328: FIRSTGEN_COMP_4YR_TRANS_YR8_RT\r\n",
+      "1329: FIRSTGEN_COMP_2YR_TRANS_YR8_RT\r\n",
+      "1330: FIRSTGEN_WDRAW_ORIG_YR8_RT\r\n",
+      "1331: FIRSTGEN_WDRAW_4YR_TRANS_YR8_RT\r\n",
+      "1332: FIRSTGEN_WDRAW_2YR_TRANS_YR8_RT\r\n",
+      "1333: FIRSTGEN_ENRL_ORIG_YR8_RT\r\n",
+      "1334: FIRSTGEN_ENRL_4YR_TRANS_YR8_RT\r\n",
+      "1335: FIRSTGEN_ENRL_2YR_TRANS_YR8_RT\r\n",
+      "1336: FIRSTGEN_UNKN_ORIG_YR8_RT\r\n",
+      "1337: FIRSTGEN_UNKN_4YR_TRANS_YR8_RT\r\n",
+      "1338: FIRSTGEN_UNKN_2YR_TRANS_YR8_RT\r\n",
+      "1339: NOT1STGEN_DEATH_YR8_RT\r\n",
+      "1340: NOT1STGEN_COMP_ORIG_YR8_RT\r\n",
+      "1341: NOT1STGEN_COMP_4YR_TRANS_YR8_RT\r\n",
+      "1342: NOT1STGEN_COMP_2YR_TRANS_YR8_RT\r\n",
+      "1343: NOT1STGEN_WDRAW_ORIG_YR8_RT\r\n",
+      "1344: NOT1STGEN_WDRAW_4YR_TRANS_YR8_RT\r\n",
+      "1345: NOT1STGEN_WDRAW_2YR_TRANS_YR8_RT\r\n",
+      "1346: NOT1STGEN_ENRL_ORIG_YR8_RT\r\n",
+      "1347: NOT1STGEN_ENRL_4YR_TRANS_YR8_RT\r\n",
+      "1348: NOT1STGEN_ENRL_2YR_TRANS_YR8_RT\r\n",
+      "1349: NOT1STGEN_UNKN_ORIG_YR8_RT\r\n",
+      "1350: NOT1STGEN_UNKN_4YR_TRANS_YR8_RT\r\n",
+      "1351: NOT1STGEN_UNKN_2YR_TRANS_YR8_RT\r\n",
+      "1352: RPY_1YR_RT\r\n",
+      "1353: COMPL_RPY_1YR_RT\r\n",
+      "1354: NONCOM_RPY_1YR_RT\r\n",
+      "1355: LO_INC_RPY_1YR_RT\r\n",
+      "1356: MD_INC_RPY_1YR_RT\r\n",
+      "1357: HI_INC_RPY_1YR_RT\r\n",
+      "1358: DEP_RPY_1YR_RT\r\n",
+      "1359: IND_RPY_1YR_RT\r\n",
+      "1360: PELL_RPY_1YR_RT\r\n",
+      "1361: NOPELL_RPY_1YR_RT\r\n",
+      "1362: FEMALE_RPY_1YR_RT\r\n",
+      "1363: MALE_RPY_1YR_RT\r\n",
+      "1364: FIRSTGEN_RPY_1YR_RT\r\n",
+      "1365: NOTFIRSTGEN_RPY_1YR_RT\r\n",
+      "1366: RPY_3YR_RT\r\n",
+      "1367: COMPL_RPY_3YR_RT\r\n",
+      "1368: NONCOM_RPY_3YR_RT\r\n",
+      "1369: LO_INC_RPY_3YR_RT\r\n",
+      "1370: MD_INC_RPY_3YR_RT\r\n",
+      "1371: HI_INC_RPY_3YR_RT\r\n",
+      "1372: DEP_RPY_3YR_RT\r\n",
+      "1373: IND_RPY_3YR_RT\r\n",
+      "1374: PELL_RPY_3YR_RT\r\n",
+      "1375: NOPELL_RPY_3YR_RT\r\n",
+      "1376: FEMALE_RPY_3YR_RT\r\n",
+      "1377: MALE_RPY_3YR_RT\r\n",
+      "1378: FIRSTGEN_RPY_3YR_RT\r\n",
+      "1379: NOTFIRSTGEN_RPY_3YR_RT\r\n",
+      "1380: RPY_5YR_RT\r\n",
+      "1381: COMPL_RPY_5YR_RT\r\n",
+      "1382: NONCOM_RPY_5YR_RT\r\n",
+      "1383: LO_INC_RPY_5YR_RT\r\n",
+      "1384: MD_INC_RPY_5YR_RT\r\n",
+      "1385: HI_INC_RPY_5YR_RT\r\n",
+      "1386: DEP_RPY_5YR_RT\r\n",
+      "1387: IND_RPY_5YR_RT\r\n",
+      "1388: PELL_RPY_5YR_RT\r\n",
+      "1389: NOPELL_RPY_5YR_RT\r\n",
+      "1390: FEMALE_RPY_5YR_RT\r\n",
+      "1391: MALE_RPY_5YR_RT\r\n",
+      "1392: FIRSTGEN_RPY_5YR_RT\r\n",
+      "1393: NOTFIRSTGEN_RPY_5YR_RT\r\n",
+      "1394: RPY_7YR_RT\r\n",
+      "1395: COMPL_RPY_7YR_RT\r\n",
+      "1396: NONCOM_RPY_7YR_RT\r\n",
+      "1397: LO_INC_RPY_7YR_RT\r\n",
+      "1398: MD_INC_RPY_7YR_RT\r\n",
+      "1399: HI_INC_RPY_7YR_RT\r\n",
+      "1400: DEP_RPY_7YR_RT\r\n",
+      "1401: IND_RPY_7YR_RT\r\n",
+      "1402: PELL_RPY_7YR_RT\r\n",
+      "1403: NOPELL_RPY_7YR_RT\r\n",
+      "1404: FEMALE_RPY_7YR_RT\r\n",
+      "1405: MALE_RPY_7YR_RT\r\n",
+      "1406: FIRSTGEN_RPY_7YR_RT\r\n",
+      "1407: NOTFIRSTGEN_RPY_7YR_RT\r\n",
+      "1408: INC_PCT_LO\r\n",
+      "1409: DEP_STAT_PCT_IND\r\n",
+      "1410: DEP_INC_PCT_LO\r\n",
+      "1411: IND_INC_PCT_LO\r\n",
+      "1412: PAR_ED_PCT_1STGEN\r\n",
+      "1413: INC_PCT_M1\r\n",
+      "1414: INC_PCT_M2\r\n",
+      "1415: INC_PCT_H1\r\n",
+      "1416: INC_PCT_H2\r\n",
+      "1417: DEP_INC_PCT_M1\r\n",
+      "1418: DEP_INC_PCT_M2\r\n",
+      "1419: DEP_INC_PCT_H1\r\n",
+      "1420: DEP_INC_PCT_H2\r\n",
+      "1421: IND_INC_PCT_M1\r\n",
+      "1422: IND_INC_PCT_M2\r\n",
+      "1423: IND_INC_PCT_H1\r\n",
+      "1424: IND_INC_PCT_H2\r\n",
+      "1425: PAR_ED_PCT_MS\r\n",
+      "1426: PAR_ED_PCT_HS\r\n",
+      "1427: PAR_ED_PCT_PS\r\n",
+      "1428: APPL_SCH_PCT_GE2\r\n",
+      "1429: APPL_SCH_PCT_GE3\r\n",
+      "1430: APPL_SCH_PCT_GE4\r\n",
+      "1431: APPL_SCH_PCT_GE5\r\n",
+      "1432: DEP_INC_AVG\r\n",
+      "1433: IND_INC_AVG\r\n",
+      "1434: OVERALL_YR2_N\r\n",
+      "1435: LO_INC_YR2_N\r\n",
+      "1436: MD_INC_YR2_N\r\n",
+      "1437: HI_INC_YR2_N\r\n",
+      "1438: DEP_YR2_N\r\n",
+      "1439: IND_YR2_N\r\n",
+      "1440: FEMALE_YR2_N\r\n",
+      "1441: MALE_YR2_N\r\n",
+      "1442: PELL_YR2_N\r\n",
+      "1443: NOPELL_YR2_N\r\n",
+      "1444: LOAN_YR2_N\r\n",
+      "1445: NOLOAN_YR2_N\r\n",
+      "1446: FIRSTGEN_YR2_N\r\n",
+      "1447: NOT1STGEN_YR2_N\r\n",
+      "1448: OVERALL_YR3_N\r\n",
+      "1449: LO_INC_YR3_N\r\n",
+      "1450: MD_INC_YR3_N\r\n",
+      "1451: HI_INC_YR3_N\r\n",
+      "1452: DEP_YR3_N\r\n",
+      "1453: IND_YR3_N\r\n",
+      "1454: FEMALE_YR3_N\r\n",
+      "1455: MALE_YR3_N\r\n",
+      "1456: PELL_YR3_N\r\n",
+      "1457: NOPELL_YR3_N\r\n",
+      "1458: LOAN_YR3_N\r\n",
+      "1459: NOLOAN_YR3_N\r\n",
+      "1460: FIRSTGEN_YR3_N\r\n",
+      "1461: NOT1STGEN_YR3_N\r\n",
+      "1462: OVERALL_YR4_N\r\n",
+      "1463: LO_INC_YR4_N\r\n",
+      "1464: MD_INC_YR4_N\r\n",
+      "1465: HI_INC_YR4_N\r\n",
+      "1466: DEP_YR4_N\r\n",
+      "1467: IND_YR4_N\r\n",
+      "1468: FEMALE_YR4_N\r\n",
+      "1469: MALE_YR4_N\r\n",
+      "1470: PELL_YR4_N\r\n",
+      "1471: NOPELL_YR4_N\r\n",
+      "1472: LOAN_YR4_N\r\n",
+      "1473: NOLOAN_YR4_N\r\n",
+      "1474: FIRSTGEN_YR4_N\r\n",
+      "1475: NOT1STGEN_YR4_N\r\n",
+      "1476: OVERALL_YR6_N\r\n",
+      "1477: LO_INC_YR6_N\r\n",
+      "1478: MD_INC_YR6_N\r\n",
+      "1479: HI_INC_YR6_N\r\n",
+      "1480: DEP_YR6_N\r\n",
+      "1481: IND_YR6_N\r\n",
+      "1482: FEMALE_YR6_N\r\n",
+      "1483: MALE_YR6_N\r\n",
+      "1484: PELL_YR6_N\r\n",
+      "1485: NOPELL_YR6_N\r\n",
+      "1486: LOAN_YR6_N\r\n",
+      "1487: NOLOAN_YR6_N\r\n",
+      "1488: FIRSTGEN_YR6_N\r\n",
+      "1489: NOT1STGEN_YR6_N\r\n",
+      "1490: OVERALL_YR8_N\r\n",
+      "1491: LO_INC_YR8_N\r\n",
+      "1492: MD_INC_YR8_N\r\n",
+      "1493: HI_INC_YR8_N\r\n",
+      "1494: DEP_YR8_N\r\n",
+      "1495: IND_YR8_N\r\n",
+      "1496: FEMALE_YR8_N\r\n",
+      "1497: MALE_YR8_N\r\n",
+      "1498: PELL_YR8_N\r\n",
+      "1499: NOPELL_YR8_N\r\n",
+      "1500: LOAN_YR8_N\r\n",
+      "1501: NOLOAN_YR8_N\r\n",
+      "1502: FIRSTGEN_YR8_N\r\n",
+      "1503: NOT1STGEN_YR8_N\r\n",
+      "1504: DEBT_MDN\r\n",
+      "1505: GRAD_DEBT_MDN\r\n",
+      "1506: WDRAW_DEBT_MDN\r\n",
+      "1507: LO_INC_DEBT_MDN\r\n",
+      "1508: MD_INC_DEBT_MDN\r\n",
+      "1509: HI_INC_DEBT_MDN\r\n",
+      "1510: DEP_DEBT_MDN\r\n",
+      "1511: IND_DEBT_MDN\r\n",
+      "1512: PELL_DEBT_MDN\r\n",
+      "1513: NOPELL_DEBT_MDN\r\n",
+      "1514: FEMALE_DEBT_MDN\r\n",
+      "1515: MALE_DEBT_MDN\r\n",
+      "1516: FIRSTGEN_DEBT_MDN\r\n",
+      "1517: NOTFIRSTGEN_DEBT_MDN\r\n",
+      "1518: DEBT_N\r\n",
+      "1519: GRAD_DEBT_N\r\n",
+      "1520: WDRAW_DEBT_N\r\n",
+      "1521: LO_INC_DEBT_N\r\n",
+      "1522: MD_INC_DEBT_N\r\n",
+      "1523: HI_INC_DEBT_N\r\n",
+      "1524: DEP_DEBT_N\r\n",
+      "1525: IND_DEBT_N\r\n",
+      "1526: PELL_DEBT_N\r\n",
+      "1527: NOPELL_DEBT_N\r\n",
+      "1528: FEMALE_DEBT_N\r\n",
+      "1529: MALE_DEBT_N\r\n",
+      "1530: FIRSTGEN_DEBT_N\r\n",
+      "1531: NOTFIRSTGEN_DEBT_N\r\n",
+      "1532: GRAD_DEBT_MDN10YR\r\n",
+      "1533: CUML_DEBT_N\r\n",
+      "1534: CUML_DEBT_P90\r\n",
+      "1535: CUML_DEBT_P75\r\n",
+      "1536: CUML_DEBT_P25\r\n",
+      "1537: CUML_DEBT_P10\r\n",
+      "1538: INC_N\r\n",
+      "1539: DEP_INC_N\r\n",
+      "1540: IND_INC_N\r\n",
+      "1541: DEP_STAT_N\r\n",
+      "1542: PAR_ED_N\r\n",
+      "1543: APPL_SCH_N\r\n",
+      "1544: REPAY_DT_MDN\r\n",
+      "1545: SEPAR_DT_MDN\r\n",
+      "1546: REPAY_DT_N\r\n",
+      "1547: SEPAR_DT_N\r\n",
+      "1548: RPY_1YR_N\r\n",
+      "1549: COMPL_RPY_1YR_N\r\n",
+      "1550: NONCOM_RPY_1YR_N\r\n",
+      "1551: LO_INC_RPY_1YR_N\r\n",
+      "1552: MD_INC_RPY_1YR_N\r\n",
+      "1553: HI_INC_RPY_1YR_N\r\n",
+      "1554: DEP_RPY_1YR_N\r\n",
+      "1555: IND_RPY_1YR_N\r\n",
+      "1556: PELL_RPY_1YR_N\r\n",
+      "1557: NOPELL_RPY_1YR_N\r\n",
+      "1558: FEMALE_RPY_1YR_N\r\n",
+      "1559: MALE_RPY_1YR_N\r\n",
+      "1560: FIRSTGEN_RPY_1YR_N\r\n",
+      "1561: NOTFIRSTGEN_RPY_1YR_N\r\n",
+      "1562: RPY_3YR_N\r\n",
+      "1563: COMPL_RPY_3YR_N\r\n",
+      "1564: NONCOM_RPY_3YR_N\r\n",
+      "1565: LO_INC_RPY_3YR_N\r\n",
+      "1566: MD_INC_RPY_3YR_N\r\n",
+      "1567: HI_INC_RPY_3YR_N\r\n",
+      "1568: DEP_RPY_3YR_N\r\n",
+      "1569: IND_RPY_3YR_N\r\n",
+      "1570: PELL_RPY_3YR_N\r\n",
+      "1571: NOPELL_RPY_3YR_N\r\n",
+      "1572: FEMALE_RPY_3YR_N\r\n",
+      "1573: MALE_RPY_3YR_N\r\n",
+      "1574: FIRSTGEN_RPY_3YR_N\r\n",
+      "1575: NOTFIRSTGEN_RPY_3YR_N\r\n",
+      "1576: RPY_5YR_N\r\n",
+      "1577: COMPL_RPY_5YR_N\r\n",
+      "1578: NONCOM_RPY_5YR_N\r\n",
+      "1579: LO_INC_RPY_5YR_N\r\n",
+      "1580: MD_INC_RPY_5YR_N\r\n",
+      "1581: HI_INC_RPY_5YR_N\r\n",
+      "1582: DEP_RPY_5YR_N\r\n",
+      "1583: IND_RPY_5YR_N\r\n",
+      "1584: PELL_RPY_5YR_N\r\n",
+      "1585: NOPELL_RPY_5YR_N\r\n",
+      "1586: FEMALE_RPY_5YR_N\r\n",
+      "1587: MALE_RPY_5YR_N\r\n",
+      "1588: FIRSTGEN_RPY_5YR_N\r\n",
+      "1589: NOTFIRSTGEN_RPY_5YR_N\r\n",
+      "1590: RPY_7YR_N\r\n",
+      "1591: COMPL_RPY_7YR_N\r\n",
+      "1592: NONCOM_RPY_7YR_N\r\n",
+      "1593: LO_INC_RPY_7YR_N\r\n",
+      "1594: MD_INC_RPY_7YR_N\r\n",
+      "1595: HI_INC_RPY_7YR_N\r\n",
+      "1596: DEP_RPY_7YR_N\r\n",
+      "1597: IND_RPY_7YR_N\r\n",
+      "1598: PELL_RPY_7YR_N\r\n",
+      "1599: NOPELL_RPY_7YR_N\r\n",
+      "1600: FEMALE_RPY_7YR_N\r\n",
+      "1601: MALE_RPY_7YR_N\r\n",
+      "1602: FIRSTGEN_RPY_7YR_N\r\n",
+      "1603: NOTFIRSTGEN_RPY_7YR_N\r\n",
+      "1604: COUNT_ED\r\n",
+      "1605: LOAN_EVER\r\n",
+      "1606: PELL_EVER\r\n",
+      "1607: AGE_ENTRY\r\n",
+      "1608: AGE_ENTRY_SQ\r\n",
+      "1609: AGEGE24\r\n",
+      "1610: FEMALE\r\n",
+      "1611: MARRIED\r\n",
+      "1612: DEPENDENT\r\n",
+      "1613: VETERAN\r\n",
+      "1614: FIRST_GEN\r\n",
+      "1615: FAMINC\r\n",
+      "1616: MD_FAMINC\r\n",
+      "1617: FAMINC_IND\r\n",
+      "1618: LNFAMINC\r\n",
+      "1619: LNFAMINC_IND\r\n",
+      "1620: PCT_WHITE\r\n",
+      "1621: PCT_BLACK\r\n",
+      "1622: PCT_ASIAN\r\n",
+      "1623: PCT_HISPANIC\r\n",
+      "1624: PCT_BA\r\n",
+      "1625: PCT_GRAD_PROF\r\n",
+      "1626: PCT_BORN_US\r\n",
+      "1627: MEDIAN_HH_INC\r\n",
+      "1628: POVERTY_RATE\r\n",
+      "1629: UNEMP_RATE\r\n",
+      "1630: LN_MEDIAN_HH_INC\r\n",
+      "1631: FSEND_COUNT\r\n",
+      "1632: FSEND_1\r\n",
+      "1633: FSEND_2\r\n",
+      "1634: FSEND_3\r\n",
+      "1635: FSEND_4\r\n",
+      "1636: FSEND_5\r\n",
+      "1637: COUNT_NWNE_P10\r\n",
+      "1638: COUNT_WNE_P10\r\n",
+      "1639: MN_EARN_WNE_P10\r\n",
+      "1640: MD_EARN_WNE_P10\r\n",
+      "1641: PCT10_EARN_WNE_P10\r\n",
+      "1642: PCT25_EARN_WNE_P10\r\n",
+      "1643: PCT75_EARN_WNE_P10\r\n",
+      "1644: PCT90_EARN_WNE_P10\r\n",
+      "1645: SD_EARN_WNE_P10\r\n",
+      "1646: COUNT_WNE_INC1_P10\r\n",
+      "1647: COUNT_WNE_INC2_P10\r\n",
+      "1648: COUNT_WNE_INC3_P10\r\n",
+      "1649: COUNT_WNE_INDEP0_INC1_P10\r\n",
+      "1650: COUNT_WNE_INDEP0_P10\r\n",
+      "1651: COUNT_WNE_INDEP1_P10\r\n",
+      "1652: COUNT_WNE_MALE0_P10\r\n",
+      "1653: COUNT_WNE_MALE1_P10\r\n",
+      "1654: GT_25K_P10\r\n",
+      "1655: MN_EARN_WNE_INC1_P10\r\n",
+      "1656: MN_EARN_WNE_INC2_P10\r\n",
+      "1657: MN_EARN_WNE_INC3_P10\r\n",
+      "1658: MN_EARN_WNE_INDEP0_INC1_P10\r\n",
+      "1659: MN_EARN_WNE_INDEP0_P10\r\n",
+      "1660: MN_EARN_WNE_INDEP1_P10\r\n",
+      "1661: MN_EARN_WNE_MALE0_P10\r\n",
+      "1662: MN_EARN_WNE_MALE1_P10\r\n",
+      "1663: COUNT_NWNE_P6\r\n",
+      "1664: COUNT_WNE_P6\r\n",
+      "1665: MN_EARN_WNE_P6\r\n",
+      "1666: MD_EARN_WNE_P6\r\n",
+      "1667: PCT10_EARN_WNE_P6\r\n",
+      "1668: PCT25_EARN_WNE_P6\r\n",
+      "1669: PCT75_EARN_WNE_P6\r\n",
+      "1670: PCT90_EARN_WNE_P6\r\n",
+      "1671: SD_EARN_WNE_P6\r\n",
+      "1672: COUNT_WNE_INC1_P6\r\n",
+      "1673: COUNT_WNE_INC2_P6\r\n",
+      "1674: COUNT_WNE_INC3_P6\r\n",
+      "1675: COUNT_WNE_INDEP0_INC1_P6\r\n",
+      "1676: COUNT_WNE_INDEP0_P6\r\n",
+      "1677: COUNT_WNE_INDEP1_P6\r\n",
+      "1678: COUNT_WNE_MALE0_P6\r\n",
+      "1679: COUNT_WNE_MALE1_P6\r\n",
+      "1680: GT_25K_P6\r\n",
+      "1681: MN_EARN_WNE_INC1_P6\r\n",
+      "1682: MN_EARN_WNE_INC2_P6\r\n",
+      "1683: MN_EARN_WNE_INC3_P6\r\n",
+      "1684: MN_EARN_WNE_INDEP0_INC1_P6\r\n",
+      "1685: MN_EARN_WNE_INDEP0_P6\r\n",
+      "1686: MN_EARN_WNE_INDEP1_P6\r\n",
+      "1687: MN_EARN_WNE_MALE0_P6\r\n",
+      "1688: MN_EARN_WNE_MALE1_P6\r\n",
+      "1689: COUNT_NWNE_P7\r\n",
+      "1690: COUNT_WNE_P7\r\n",
+      "1691: MN_EARN_WNE_P7\r\n",
+      "1692: SD_EARN_WNE_P7\r\n",
+      "1693: GT_25K_P7\r\n",
+      "1694: COUNT_NWNE_P8\r\n",
+      "1695: COUNT_WNE_P8\r\n",
+      "1696: MN_EARN_WNE_P8\r\n",
+      "1697: MD_EARN_WNE_P8\r\n",
+      "1698: PCT10_EARN_WNE_P8\r\n",
+      "1699: PCT25_EARN_WNE_P8\r\n",
+      "1700: PCT75_EARN_WNE_P8\r\n",
+      "1701: PCT90_EARN_WNE_P8\r\n",
+      "1702: SD_EARN_WNE_P8\r\n",
+      "1703: GT_25K_P8\r\n",
+      "1704: COUNT_NWNE_P9\r\n",
+      "1705: COUNT_WNE_P9\r\n",
+      "1706: MN_EARN_WNE_P9\r\n",
+      "1707: SD_EARN_WNE_P9\r\n",
+      "1708: GT_25K_P9\r\n",
+      "1709: DEBT_MDN_SUPP\r\n",
+      "1710: GRAD_DEBT_MDN_SUPP\r\n",
+      "1711: GRAD_DEBT_MDN10YR_SUPP\r\n",
+      "1712: RPY_3YR_RT_SUPP\r\n",
+      "1713: LO_INC_RPY_3YR_RT_SUPP\r\n",
+      "1714: MD_INC_RPY_3YR_RT_SUPP\r\n",
+      "1715: HI_INC_RPY_3YR_RT_SUPP\r\n",
+      "1716: COMPL_RPY_3YR_RT_SUPP\r\n",
+      "1717: NONCOM_RPY_3YR_RT_SUPP\r\n",
+      "1718: DEP_RPY_3YR_RT_SUPP\r\n",
+      "1719: IND_RPY_3YR_RT_SUPP\r\n",
+      "1720: PELL_RPY_3YR_RT_SUPP\r\n",
+      "1721: NOPELL_RPY_3YR_RT_SUPP\r\n",
+      "1722: FEMALE_RPY_3YR_RT_SUPP\r\n",
+      "1723: MALE_RPY_3YR_RT_SUPP\r\n",
+      "1724: FIRSTGEN_RPY_3YR_RT_SUPP\r\n",
+      "1725: NOTFIRSTGEN_RPY_3YR_RT_SUPP\r\n",
+      "1726: C150_L4_POOLED_SUPP\r\n",
+      "1727: C150_4_POOLED_SUPP\r\n",
+      "1728: C200_L4_POOLED_SUPP\r\n",
+      "1729: C200_4_POOLED_SUPP\r\n",
+      "1730: ALIAS\r\n",
+      "1731: C100_4\r\n",
+      "1732: D100_4\r\n",
+      "1733: C100_L4\r\n",
+      "1734: D100_L4\r\n",
+      "1735: TRANS_4\r\n",
+      "1736: DTRANS_4\r\n",
+      "1737: TRANS_L4\r\n",
+      "1738: DTRANS_L4\r\n",
+      "1739: ICLEVEL\r\n",
+      "1740: UGDS_MEN\r\n",
+      "1741: UGDS_WOMEN\r\n",
+      "1742: CDR3_DENOM\r\n",
+      "1743: CDR2_DENOM\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!csvcut -n MERGED2014_15_PP.csv"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Choose useful columns to create new datasets"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "!csvcut -c4,5,6,7,16,1739,37,38,60,61,429,430,431,432,1408,1413,1414,1415,1416,1504,1505,1506,1507,1508,1509 MERGED2014_15_PP.csv > education15.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "!csvcut -c4,5,6,7,16,1739,37,38,60,61,429,430,431,432,1408,1413,1414,1415,1416,1504,1505,1506,1507,1508,1509 MERGED2013_14_PP.csv > education14.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "!csvcut -c4,5,6,7,16,1739,37,38,60,61,429,430,431,432,1408,1413,1414,1415,1416,1504,1505,1506,1507,1508,1509 MERGED2012_13_PP.csv > education13.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "!csvcut -c4,5,6,7,16,1739,37,38,60,61,429,430,431,432,1408,1413,1414,1415,1416,1504,1505,1506,1507,1508,1509 MERGED2011_12_PP.csv > education12.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "!csvcut -c4,5,6,7,16,1739,37,38,60,61,429,430,431,432,1408,1413,1414,1415,1416,1504,1505,1506,1507,1508,1509 MERGED2010_11_PP.csv > education11.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "!csvcut -c4,5,6,7,16,1739,37,38,60,61,429,430,431,432,1408,1413,1414,1415,1416,1504,1505,1506,1507,1508,1509 MERGED2009_10_PP.csv > education10.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "!csvcut -c4,5,6,7,16,1739,37,38,60,61,429,430,431,432,1408,1413,1414,1415,1416,1504,1505,1506,1507,1508,1509 MERGED2008_09_PP.csv > education09.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "!csvcut -c4,5,6,7,16,1739,37,38,60,61,429,430,431,432,1408,1413,1414,1415,1416,1504,1505,1506,1507,1508,1509 MERGED2007_08_PP.csv > education08.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "!csvcut -c4,5,6,7,16,1739,37,38,60,61,429,430,431,432,1408,1413,1414,1415,1416,1504,1505,1506,1507,1508,1509 MERGED2006_07_PP.csv > education07.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "!csvcut -c4,5,6,7,16,1739,37,38,60,61,429,430,431,432,1408,1413,1414,1415,1416,1504,1505,1506,1507,1508,1509 MERGED2005_06_PP.csv > education06.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "!csvcut -c4,5,6,7,16,1739,37,38,60,61,429,430,431,432,1408,1413,1414,1415,1416,1504,1505,1506,1507,1508,1509 MERGED2004_05_PP.csv > education05.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/opt/conda/lib/python3.5/site-packages/IPython/config.py:13: ShimWarning: The `IPython.config` package has been deprecated. You should import from traitlets.config instead.\n",
+      "  \"You should import from traitlets.config instead.\", ShimWarning)\n",
+      "/opt/conda/lib/python3.5/site-packages/IPython/utils/traitlets.py:5: UserWarning: IPython.utils.traitlets has moved to a top-level traitlets package.\n",
+      "  warn(\"IPython.utils.traitlets has moved to a top-level traitlets package.\")\n"
+     ]
+    }
+   ],
+   "source": [
+    "%load_ext sql"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[sudo] password for jovyan: Restarting PostgreSQL 9.5 database server: main.\n"
+     ]
+    }
+   ],
+   "source": [
+    "!echo 'redspot' | sudo -S service postgresql restart"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "!createdb -U dbuser education"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Connected: dbuser@education'"
+      ]
+     },
+     "execution_count": 19,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%sql postgresql://dbuser@localhost:5432/education"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Load csv to database and add corresponding year for every record"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "  1. INSTNM\n",
+      "\t<class 'str'>\n",
+      "\tNulls: False\n",
+      "\tUnique values: 7535\n",
+      "\t5 most frequent values:\n",
+      "\t\tUEI College:\t8\n",
+      "\t\tMcCann School of Business & Technology:\t7\n",
+      "\t\tStevens-Henager College:\t7\n",
+      "\t\tColumbia College:\t5\n",
+      "\t\tBryan University:\t5\n",
+      "\tMax length: 93\n",
+      "  2. CITY\n",
+      "\t<class 'str'>\n",
+      "\tNulls: False\n",
+      "\tUnique values: 2542\n",
+      "\t5 most frequent values:\n",
+      "\t\tNew York:\t89\n",
+      "\t\tChicago:\t80\n",
+      "\t\tHouston:\t75\n",
+      "\t\tLos Angeles:\t57\n",
+      "\t\tMiami:\t53\n",
+      "\tMax length: 24\n",
+      "  3. STABBR\n",
+      "\t<class 'str'>\n",
+      "\tNulls: False\n",
+      "\tUnique values: 59\n",
+      "\t5 most frequent values:\n",
+      "\t\tCA:\t795\n",
+      "\t\tTX:\t485\n",
+      "\t\tNY:\t467\n",
+      "\t\tFL:\t446\n",
+      "\t\tPA:\t405\n",
+      "\tMax length: 2\n",
+      "  4. ZIP\n",
+      "\t<class 'str'>\n",
+      "\tNulls: False\n",
+      "\tUnique values: 6513\n",
+      "\t5 most frequent values:\n",
+      "\t\t90010:\t9\n",
+      "\t\t78229:\t9\n",
+      "\t\t85021:\t8\n",
+      "\t\t23462:\t7\n",
+      "\t\t46410:\t7\n",
+      "\tMax length: 10\n",
+      "  5. HIGHDEG\n",
+      "\t<class 'int'>\n",
+      "\tNulls: False\n",
+      "\tValues: 0, 1, 2, 3, 4\n",
+      "  6. ICLEVEL\n",
+      "\t<class 'int'>\n",
+      "\tNulls: False\n",
+      "\tValues: 1, 2, 3\n",
+      "  7. ADM_RATE\n",
+      "\t<class 'float'>\n",
+      "\tNulls: True\n",
+      "\tMin: 0.0\n",
+      "\tMax: 1.0\n",
+      "\tSum: 1519.6226999999992\n",
+      "\tMean: 0.6913661055505\n",
+      "\tMedian: 0.71295\n",
+      "\tStandard Deviation: 0.20888087166216035\n",
+      "\tUnique values: 1719\n",
+      "\t5 most frequent values:\n",
+      "\t\t1.0:\t142\n",
+      "\t\t0.6667:\t15\n",
+      "\t\t0.75:\t6\n",
+      "\t\t0.5:\t6\n",
+      "\t\t0.8889:\t6\n",
+      "  8. ADM_RATE_ALL\n",
+      "\t<class 'float'>\n",
+      "\tNulls: True\n",
+      "\tMin: 0.0\n",
+      "\tMax: 1.0\n",
+      "\tSum: 1660.7129671758555\n",
+      "\tMean: 0.6913875800066009\n",
+      "\tMedian: 0.718305827917755\n",
+      "\tStandard Deviation: 0.20372609643152892\n",
+      "\tUnique values: 1706\n",
+      "\t5 most frequent values:\n",
+      "\t\t1.0:\t146\n",
+      "\t\t0.85361152058056:\t142\n",
+      "\t\t0.77418668934722:\t25\n",
+      "\t\t0.62651766688141:\t24\n",
+      "\t\t0.7404536319265:\t18\n",
+      "  9. SAT_AVG\n",
+      "\t<class 'int'>\n",
+      "\tNulls: True\n",
+      "\tMin: 720\n",
+      "\tMax: 1545\n",
+      "\tSum: 1381030\n",
+      "\tMean: 1059.0720858895706\n",
+      "\tMedian: 1039.5\n",
+      "\tStandard Deviation: 133.30583529564603\n",
+      "\tUnique values: 472\n",
+      "\t5 most frequent values:\n",
+      "\t\t1050:\t26\n",
+      "\t\t1010:\t26\n",
+      "\t\t1030:\t20\n",
+      "\t\t970:\t20\n",
+      "\t\t990:\t19\n",
+      " 10. SAT_AVG_ALL\n",
+      "\t<class 'int'>\n",
+      "\tNulls: True\n",
+      "\tMin: 720\n",
+      "\tMax: 1545\n",
+      "\tSum: 1502135\n",
+      "\tMean: 1064.5889440113394\n",
+      "\tMedian: 1050\n",
+      "\tStandard Deviation: 131.57394675190932\n",
+      "\tUnique values: 467\n",
+      "\t5 most frequent values:\n",
+      "\t\t1050:\t39\n",
+      "\t\t1089:\t30\n",
+      "\t\t1010:\t25\n",
+      "\t\t1030:\t24\n",
+      "\t\t990:\t20\n",
+      " 11. RET_FT4\n",
+      "\t<class 'float'>\n",
+      "\tNulls: True\n",
+      "\tMin: 0.0\n",
+      "\tMax: 1.0\n",
+      "\tSum: 1621.3364999999976\n",
+      "\tMean: 0.7070808983863923\n",
+      "\tMedian: 0.7414\n",
+      "\tStandard Deviation: 0.19560223518797457\n",
+      "\tUnique values: 1505\n",
+      "\t5 most frequent values:\n",
+      "\t\t1.0:\t92\n",
+      "\t\t0.5:\t57\n",
+      "\t\t0.0:\t48\n",
+      "\t\t0.6667:\t35\n",
+      "\t\t0.75:\t27\n",
+      " 12. RET_FTL4\n",
+      "\t<class 'float'>\n",
+      "\tNulls: True\n",
+      "\tMin: 0.0\n",
+      "\tMax: 1.0\n",
+      "\tSum: 2636.8946000000055\n",
+      "\tMean: 0.6861552432995071\n",
+      "\tMedian: 0.6906\n",
+      "\tStandard Deviation: 0.18009762742777305\n",
+      "\tUnique values: 1712\n",
+      "\t5 most frequent values:\n",
+      "\t\t1.0:\t215\n",
+      "\t\t0.6667:\t85\n",
+      "\t\t0.75:\t81\n",
+      "\t\t0.8:\t69\n",
+      "\t\t0.5:\t66\n",
+      " 13. RET_PT4\n",
+      "\t<class 'float'>\n",
+      "\tNulls: True\n",
+      "\tMin: 0.0\n",
+      "\tMax: 1.0\n",
+      "\tSum: 643.3620000000001\n",
+      "\tMean: 0.4556388101983003\n",
+      "\tMedian: 0.45\n",
+      "\tStandard Deviation: 0.2932212878519834\n",
+      "\tUnique values: 389\n",
+      "\t5 most frequent values:\n",
+      "\t\t0.0:\t184\n",
+      "\t\t1.0:\t155\n",
+      "\t\t0.5:\t150\n",
+      "\t\t0.3333:\t70\n",
+      "\t\t0.6667:\t45\n",
+      " 14. RET_PTL4\n",
+      "\t<class 'float'>\n",
+      "\tNulls: True\n",
+      "\tMin: 0.0\n",
+      "\tMax: 1.0\n",
+      "\tSum: 1246.8121999999948\n",
+      "\tMean: 0.5646794384057948\n",
+      "\tMedian: 0.50325\n",
+      "\tStandard Deviation: 0.26348012864607384\n",
+      "\tUnique values: 1009\n",
+      "\t5 most frequent values:\n",
+      "\t\t1.0:\t244\n",
+      "\t\t0.0:\t75\n",
+      "\t\t0.5:\t71\n",
+      "\t\t0.6667:\t60\n",
+      "\t\t0.75:\t46\n",
+      " 15. INC_PCT_LO\n",
+      "\t<class 'str'>\n",
+      "\tNulls: True\n",
+      "\tUnique values: 4536\n",
+      "\t5 most frequent values:\n",
+      "\t\tPrivacySuppressed:\t476\n",
+      "\t\t0.7181093571:\t142\n",
+      "\t\t0.7708312692:\t85\n",
+      "\t\t0.7320481758:\t81\n",
+      "\t\t0.7322646003:\t38\n",
+      "\tMax length: 17\n",
+      " 16. INC_PCT_M1\n",
+      "\t<class 'str'>\n",
+      "\tNulls: True\n",
+      "\tUnique values: 3802\n",
+      "\t5 most frequent values:\n",
+      "\t\tPrivacySuppressed:\t1217\n",
+      "\t\t0.1437831467:\t142\n",
+      "\t\t0.0959080551:\t85\n",
+      "\t\t0.152076969:\t81\n",
+      "\t\t0.1411651797:\t38\n",
+      "\tMax length: 17\n",
+      " 17. INC_PCT_M2\n",
+      "\t<class 'str'>\n",
+      "\tNulls: True\n",
+      "\tUnique values: 3470\n",
+      "\t5 most frequent values:\n",
+      "\t\tPrivacySuppressed:\t1900\n",
+      "\t\t0.0815370778:\t142\n",
+      "\t\t0.0624194987:\t85\n",
+      "\t\t0.0731064995:\t81\n",
+      "\t\t0.0773824334:\t38\n",
+      "\tMax length: 17\n",
+      " 18. INC_PCT_H1\n",
+      "\t<class 'str'>\n",
+      "\tNulls: True\n",
+      "\tUnique values: 2999\n",
+      "\t5 most frequent values:\n",
+      "\t\tPrivacySuppressed:\t2659\n",
+      "\t\t0.0383339019:\t142\n",
+      "\t\t0.0433964134:\t85\n",
+      "\t\t0.0283015555:\t81\n",
+      "\t\t0.0325880638:\t38\n",
+      "\tMax length: 17\n",
+      " 19. INC_PCT_H2\n",
+      "\t<class 'str'>\n",
+      "\tNulls: True\n",
+      "\tUnique values: 2995\n",
+      "\t5 most frequent values:\n",
+      "\t\tPrivacySuppressed:\t2695\n",
+      "\t\t0.0182365165:\t142\n",
+      "\t\t0.0274447637:\t85\n",
+      "\t\t0.0144668001:\t81\n",
+      "\t\t0.0165997227:\t38\n",
+      "\tMax length: 17\n",
+      " 20. DEBT_MDN\n",
+      "\t<class 'str'>\n",
+      "\tNulls: True\n",
+      "\tUnique values: 2096\n",
+      "\t5 most frequent values:\n",
+      "\t\tPrivacySuppressed:\t990\n",
+      "\t\t9500:\t904\n",
+      "\t\t5500:\t224\n",
+      "\t\t13566:\t142\n",
+      "\t\t12000:\t135\n",
+      "\tMax length: 17\n",
+      " 21. GRAD_DEBT_MDN\n",
+      "\t<class 'str'>\n",
+      "\tNulls: True\n",
+      "\tUnique values: 2118\n",
+      "\t5 most frequent values:\n",
+      "\t\tPrivacySuppressed:\t1408\n",
+      "\t\t9500:\t546\n",
+      "\t\t27000:\t319\n",
+      "\t\t25827.5:\t142\n",
+      "\t\t25000:\t125\n",
+      "\tMax length: 17\n",
+      " 22. WDRAW_DEBT_MDN\n",
+      "\t<class 'str'>\n",
+      "\tNulls: True\n",
+      "\tUnique values: 1572\n",
+      "\t5 most frequent values:\n",
+      "\t\tPrivacySuppressed:\t1594\n",
+      "\t\t4750:\t910\n",
+      "\t\t9500:\t641\n",
+      "\t\t5500:\t362\n",
+      "\t\t6334:\t165\n",
+      "\tMax length: 17\n",
+      " 23. LO_INC_DEBT_MDN\n",
+      "\t<class 'str'>\n",
+      "\tNulls: True\n",
+      "\tUnique values: 2182\n",
+      "\t5 most frequent values:\n",
+      "\t\tPrivacySuppressed:\t1534\n",
+      "\t\t9500:\t908\n",
+      "\t\t12667:\t154\n",
+      "\t\t5500:\t95\n",
+      "\t\t6333:\t92\n",
+      "\tMax length: 17\n",
+      " 24. MD_INC_DEBT_MDN\n",
+      "\t<class 'str'>\n",
+      "\tNulls: True\n",
+      "\tUnique values: 1650\n",
+      "\t5 most frequent values:\n",
+      "\t\tPrivacySuppressed:\t2406\n",
+      "\t\t9500:\t442\n",
+      "\t\t5500:\t178\n",
+      "\t\t17014:\t142\n",
+      "\t\t20000:\t102\n",
+      "\tMax length: 17\n",
+      " 25. HI_INC_DEBT_MDN\n",
+      "\t<class 'str'>\n",
+      "\tNulls: True\n",
+      "\tUnique values: 1421\n",
+      "\t5 most frequent values:\n",
+      "\t\tPrivacySuppressed:\t2394\n",
+      "\t\t5500:\t486\n",
+      "\t\t9500:\t265\n",
+      "\t\t12000:\t223\n",
+      "\t\t17000:\t156\n",
+      "\tMax length: 17\n",
+      "\n",
+      "Row count: 7703\n"
+     ]
+    }
+   ],
+   "source": [
+    "!csvstat education15.csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 60,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 60,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "DROP TABLE IF EXISTS education15;\n",
+    "CREATE TABLE education15 (\n",
+    "    INSTITUTION CHAR(94),\n",
+    "    CITY CHAR(25),\n",
+    "    STABBR CHAR(2),\n",
+    "    ZIP CHAR(11),\n",
+    "    HIGHDEG INT,\n",
+    "    ICLEVEL CHAR(11),\n",
+    "    ADM_RATE CHAR(18),\n",
+    "    ADM_RATE_ALL CHAR(18),\n",
+    "    SAT_AVG CHAR(8),\n",
+    "    SAT_AVG_ALL CHAR(8),\n",
+    "    RET_FT4 CHAR(18),\n",
+    "    RET_FTL4 CHAR(18),\n",
+    "    RET_PT4 CHAR(18),\n",
+    "    RET_PTL4 CHAR(18),\n",
+    "    INC_PCT_LO CHAR(18),\n",
+    "    INC_PCT_M1 CHAR(18),\n",
+    "    INC_PCT_M2 CHAR(18),\n",
+    "    INC_PCT_H1 CHAR(18),\n",
+    "    INC_PCT_H2 CHAR(18),\n",
+    "    DEBT_MDN CHAR(18),   \n",
+    "    GRAD_DEBT_MDN CHAR(18),\n",
+    "    WDRAW_DEBT_MDN CHAR(18),\n",
+    "    LO_INC_DEBT_MDN CHAR(18),\n",
+    "    MD_INC_DEBT_MDN CHAR(18),\n",
+    "    HI_INC_DEBT_MDN CHAR(18)\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 61,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "7703 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 61,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "COPY education15 FROM '/home/jovyan/work/education15.csv'\n",
+    "CSV\n",
+    "HEADER\n",
+    "QUOTE '\"'\n",
+    "DELIMITER ',';"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 62,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 62,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "ALTER TABLE education15\n",
+    "ADD year INT NOT NULL \n",
+    "CONSTRAINT year DEFAULT 2015"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 63,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 63,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "DROP TABLE IF EXISTS education14;\n",
+    "CREATE TABLE education14 (\n",
+    "    INSTITUTION CHAR(94),\n",
+    "    CITY CHAR(25),\n",
+    "    STABBR CHAR(2),\n",
+    "    ZIP CHAR(11),\n",
+    "    HIGHDEG INT,\n",
+    "    ICLEVEL CHAR(11),\n",
+    "    ADM_RATE CHAR(18),\n",
+    "    ADM_RATE_ALL CHAR(18),\n",
+    "    SAT_AVG CHAR(8),\n",
+    "    SAT_AVG_ALL CHAR(8),\n",
+    "    RET_FT4 CHAR(18),\n",
+    "    RET_FTL4 CHAR(18),\n",
+    "    RET_PT4 CHAR(18),\n",
+    "    RET_PTL4 CHAR(18),\n",
+    "    INC_PCT_LO CHAR(18),\n",
+    "    INC_PCT_M1 CHAR(18),\n",
+    "    INC_PCT_M2 CHAR(18),\n",
+    "    INC_PCT_H1 CHAR(18),\n",
+    "    INC_PCT_H2 CHAR(18),\n",
+    "    DEBT_MDN CHAR(18),   \n",
+    "    GRAD_DEBT_MDN CHAR(18),\n",
+    "    WDRAW_DEBT_MDN CHAR(18),\n",
+    "    LO_INC_DEBT_MDN CHAR(18),\n",
+    "    MD_INC_DEBT_MDN CHAR(18),\n",
+    "    HI_INC_DEBT_MDN CHAR(18)\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 64,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "7804 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 64,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "COPY education14 FROM '/home/jovyan/work/education14.csv'\n",
+    "CSV\n",
+    "HEADER\n",
+    "QUOTE '\"'\n",
+    "DELIMITER ',';"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 65,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 65,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "ALTER TABLE education14\n",
+    "ADD year INT NOT NULL \n",
+    "CONSTRAINT year DEFAULT 2014"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 66,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 66,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "DROP TABLE IF EXISTS education13;\n",
+    "CREATE TABLE education13 (\n",
+    "    INSTITUTION CHAR(94),\n",
+    "    CITY CHAR(25),\n",
+    "    STABBR CHAR(2),\n",
+    "    ZIP CHAR(11),\n",
+    "    HIGHDEG INT,\n",
+    "    ICLEVEL CHAR(11),\n",
+    "    ADM_RATE CHAR(18),\n",
+    "    ADM_RATE_ALL CHAR(18),\n",
+    "    SAT_AVG CHAR(8),\n",
+    "    SAT_AVG_ALL CHAR(8),\n",
+    "    RET_FT4 CHAR(18),\n",
+    "    RET_FTL4 CHAR(18),\n",
+    "    RET_PT4 CHAR(18),\n",
+    "    RET_PTL4 CHAR(18),\n",
+    "    INC_PCT_LO CHAR(18),\n",
+    "    INC_PCT_M1 CHAR(18),\n",
+    "    INC_PCT_M2 CHAR(18),\n",
+    "    INC_PCT_H1 CHAR(18),\n",
+    "    INC_PCT_H2 CHAR(18),\n",
+    "    DEBT_MDN CHAR(18),   \n",
+    "    GRAD_DEBT_MDN CHAR(18),\n",
+    "    WDRAW_DEBT_MDN CHAR(18),\n",
+    "    LO_INC_DEBT_MDN CHAR(18),\n",
+    "    MD_INC_DEBT_MDN CHAR(18),\n",
+    "    HI_INC_DEBT_MDN CHAR(18)\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 67,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "7793 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 67,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "COPY education13 FROM '/home/jovyan/work/education13.csv'\n",
+    "CSV\n",
+    "HEADER\n",
+    "QUOTE '\"'\n",
+    "DELIMITER ',';"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 68,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 68,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "ALTER TABLE education13\n",
+    "ADD year INT NOT NULL \n",
+    "CONSTRAINT year DEFAULT 2013"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 69,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 69,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "DROP TABLE IF EXISTS education12;\n",
+    "CREATE TABLE education12 (\n",
+    "    INSTITUTION CHAR(94),\n",
+    "    CITY CHAR(25),\n",
+    "    STABBR CHAR(2),\n",
+    "    ZIP CHAR(11),\n",
+    "    HIGHDEG INT,\n",
+    "    ICLEVEL CHAR(11),\n",
+    "    ADM_RATE CHAR(18),\n",
+    "    ADM_RATE_ALL CHAR(18),\n",
+    "    SAT_AVG CHAR(8),\n",
+    "    SAT_AVG_ALL CHAR(8),\n",
+    "    RET_FT4 CHAR(18),\n",
+    "    RET_FTL4 CHAR(18),\n",
+    "    RET_PT4 CHAR(18),\n",
+    "    RET_PTL4 CHAR(18),\n",
+    "    INC_PCT_LO CHAR(18),\n",
+    "    INC_PCT_M1 CHAR(18),\n",
+    "    INC_PCT_M2 CHAR(18),\n",
+    "    INC_PCT_H1 CHAR(18),\n",
+    "    INC_PCT_H2 CHAR(18),\n",
+    "    DEBT_MDN CHAR(18),   \n",
+    "    GRAD_DEBT_MDN CHAR(18),\n",
+    "    WDRAW_DEBT_MDN CHAR(18),\n",
+    "    LO_INC_DEBT_MDN CHAR(18),\n",
+    "    MD_INC_DEBT_MDN CHAR(18),\n",
+    "    HI_INC_DEBT_MDN CHAR(18)\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 70,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "7675 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 70,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "COPY education12 FROM '/home/jovyan/work/education12.csv'\n",
+    "CSV\n",
+    "HEADER\n",
+    "QUOTE '\"'\n",
+    "DELIMITER ',';"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 71,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 71,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "ALTER TABLE education12\n",
+    "ADD year INT NOT NULL \n",
+    "CONSTRAINT year DEFAULT 2012"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 72,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 72,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "DROP TABLE IF EXISTS education11;\n",
+    "CREATE TABLE education11 (\n",
+    "    INSTITUTION CHAR(94),\n",
+    "    CITY CHAR(25),\n",
+    "    STABBR CHAR(2),\n",
+    "    ZIP CHAR(11),\n",
+    "    HIGHDEG INT,\n",
+    "    ICLEVEL CHAR(11),\n",
+    "    ADM_RATE CHAR(18),\n",
+    "    ADM_RATE_ALL CHAR(18),\n",
+    "    SAT_AVG CHAR(8),\n",
+    "    SAT_AVG_ALL CHAR(8),\n",
+    "    RET_FT4 CHAR(18),\n",
+    "    RET_FTL4 CHAR(18),\n",
+    "    RET_PT4 CHAR(18),\n",
+    "    RET_PTL4 CHAR(18),\n",
+    "    INC_PCT_LO CHAR(18),\n",
+    "    INC_PCT_M1 CHAR(18),\n",
+    "    INC_PCT_M2 CHAR(18),\n",
+    "    INC_PCT_H1 CHAR(18),\n",
+    "    INC_PCT_H2 CHAR(18),\n",
+    "    DEBT_MDN CHAR(18),   \n",
+    "    GRAD_DEBT_MDN CHAR(18),\n",
+    "    WDRAW_DEBT_MDN CHAR(18),\n",
+    "    LO_INC_DEBT_MDN CHAR(18),\n",
+    "    MD_INC_DEBT_MDN CHAR(18),\n",
+    "    HI_INC_DEBT_MDN CHAR(18)\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 73,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "7414 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 73,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "COPY education11 FROM '/home/jovyan/work/education11.csv'\n",
+    "CSV\n",
+    "HEADER\n",
+    "QUOTE '\"'\n",
+    "DELIMITER ',';"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 74,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 74,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "ALTER TABLE education11\n",
+    "ADD year INT NOT NULL \n",
+    "CONSTRAINT year DEFAULT 2011"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 75,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 75,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "DROP TABLE IF EXISTS education10;\n",
+    "CREATE TABLE education10 (\n",
+    "    INSTITUTION CHAR(94),\n",
+    "    CITY CHAR(25),\n",
+    "    STABBR CHAR(2),\n",
+    "    ZIP CHAR(11),\n",
+    "    HIGHDEG INT,\n",
+    "    ICLEVEL CHAR(11),\n",
+    "    ADM_RATE CHAR(18),\n",
+    "    ADM_RATE_ALL CHAR(18),\n",
+    "    SAT_AVG CHAR(8),\n",
+    "    SAT_AVG_ALL CHAR(8),\n",
+    "    RET_FT4 CHAR(18),\n",
+    "    RET_FTL4 CHAR(18),\n",
+    "    RET_PT4 CHAR(18),\n",
+    "    RET_PTL4 CHAR(18),\n",
+    "    INC_PCT_LO CHAR(18),\n",
+    "    INC_PCT_M1 CHAR(18),\n",
+    "    INC_PCT_M2 CHAR(18),\n",
+    "    INC_PCT_H1 CHAR(18),\n",
+    "    INC_PCT_H2 CHAR(18),\n",
+    "    DEBT_MDN CHAR(18),   \n",
+    "    GRAD_DEBT_MDN CHAR(18),\n",
+    "    WDRAW_DEBT_MDN CHAR(18),\n",
+    "    LO_INC_DEBT_MDN CHAR(18),\n",
+    "    MD_INC_DEBT_MDN CHAR(18),\n",
+    "    HI_INC_DEBT_MDN CHAR(18)\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 76,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "7149 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 76,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "COPY education10 FROM '/home/jovyan/work/education10.csv'\n",
+    "CSV\n",
+    "HEADER\n",
+    "QUOTE '\"'\n",
+    "DELIMITER ',';"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 77,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 77,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "ALTER TABLE education10\n",
+    "ADD year INT NOT NULL \n",
+    "CONSTRAINT year DEFAULT 2010"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 78,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 78,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "DROP TABLE IF EXISTS education09;\n",
+    "CREATE TABLE education09 (\n",
+    "    INSTITUTION CHAR(94),\n",
+    "    CITY CHAR(25),\n",
+    "    STABBR CHAR(2),\n",
+    "    ZIP CHAR(11),\n",
+    "    HIGHDEG INT,\n",
+    "    ICLEVEL CHAR(11),\n",
+    "    ADM_RATE CHAR(18),\n",
+    "    ADM_RATE_ALL CHAR(18),\n",
+    "    SAT_AVG CHAR(8),\n",
+    "    SAT_AVG_ALL CHAR(8),\n",
+    "    RET_FT4 CHAR(18),\n",
+    "    RET_FTL4 CHAR(18),\n",
+    "    RET_PT4 CHAR(18),\n",
+    "    RET_PTL4 CHAR(18),\n",
+    "    INC_PCT_LO CHAR(18),\n",
+    "    INC_PCT_M1 CHAR(18),\n",
+    "    INC_PCT_M2 CHAR(18),\n",
+    "    INC_PCT_H1 CHAR(18),\n",
+    "    INC_PCT_H2 CHAR(18),\n",
+    "    DEBT_MDN CHAR(18),   \n",
+    "    GRAD_DEBT_MDN CHAR(18),\n",
+    "    WDRAW_DEBT_MDN CHAR(18),\n",
+    "    LO_INC_DEBT_MDN CHAR(18),\n",
+    "    MD_INC_DEBT_MDN CHAR(18),\n",
+    "    HI_INC_DEBT_MDN CHAR(18)\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 79,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "6975 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 79,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "COPY education09 FROM '/home/jovyan/work/education09.csv'\n",
+    "CSV\n",
+    "HEADER\n",
+    "QUOTE '\"'\n",
+    "DELIMITER ',';"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 80,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 80,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "ALTER TABLE education09\n",
+    "ADD year INT NOT NULL \n",
+    "CONSTRAINT year DEFAULT 2009"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 81,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 81,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "DROP TABLE IF EXISTS education08;\n",
+    "CREATE TABLE education08 (\n",
+    "    INSTITUTION CHAR(94),\n",
+    "    CITY CHAR(25),\n",
+    "    STABBR CHAR(2),\n",
+    "    ZIP CHAR(11),\n",
+    "    HIGHDEG INT,\n",
+    "    ICLEVEL CHAR(11),\n",
+    "    ADM_RATE CHAR(18),\n",
+    "    ADM_RATE_ALL CHAR(18),\n",
+    "    SAT_AVG CHAR(8),\n",
+    "    SAT_AVG_ALL CHAR(8),\n",
+    "    RET_FT4 CHAR(18),\n",
+    "    RET_FTL4 CHAR(18),\n",
+    "    RET_PT4 CHAR(18),\n",
+    "    RET_PTL4 CHAR(18),\n",
+    "    INC_PCT_LO CHAR(18),\n",
+    "    INC_PCT_M1 CHAR(18),\n",
+    "    INC_PCT_M2 CHAR(18),\n",
+    "    INC_PCT_H1 CHAR(18),\n",
+    "    INC_PCT_H2 CHAR(18),\n",
+    "    DEBT_MDN CHAR(18),   \n",
+    "    GRAD_DEBT_MDN CHAR(18),\n",
+    "    WDRAW_DEBT_MDN CHAR(18),\n",
+    "    LO_INC_DEBT_MDN CHAR(18),\n",
+    "    MD_INC_DEBT_MDN CHAR(18),\n",
+    "    HI_INC_DEBT_MDN CHAR(18)\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 82,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "6890 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 82,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "COPY education08 FROM '/home/jovyan/work/education08.csv'\n",
+    "CSV\n",
+    "HEADER\n",
+    "QUOTE '\"'\n",
+    "DELIMITER ',';"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 83,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 83,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "ALTER TABLE education08\n",
+    "ADD year INT NOT NULL \n",
+    "CONSTRAINT year DEFAULT 2008"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 84,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 84,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "DROP TABLE IF EXISTS education07;\n",
+    "CREATE TABLE education07 (\n",
+    "    INSTITUTION CHAR(94),\n",
+    "    CITY CHAR(25),\n",
+    "    STABBR CHAR(2),\n",
+    "    ZIP CHAR(11),\n",
+    "    HIGHDEG INT,\n",
+    "    ICLEVEL CHAR(11),\n",
+    "    ADM_RATE CHAR(18),\n",
+    "    ADM_RATE_ALL CHAR(18),\n",
+    "    SAT_AVG CHAR(8),\n",
+    "    SAT_AVG_ALL CHAR(8),\n",
+    "    RET_FT4 CHAR(18),\n",
+    "    RET_FTL4 CHAR(18),\n",
+    "    RET_PT4 CHAR(18),\n",
+    "    RET_PTL4 CHAR(18),\n",
+    "    INC_PCT_LO CHAR(18),\n",
+    "    INC_PCT_M1 CHAR(18),\n",
+    "    INC_PCT_M2 CHAR(18),\n",
+    "    INC_PCT_H1 CHAR(18),\n",
+    "    INC_PCT_H2 CHAR(18),\n",
+    "    DEBT_MDN CHAR(18),   \n",
+    "    GRAD_DEBT_MDN CHAR(18),\n",
+    "    WDRAW_DEBT_MDN CHAR(18),\n",
+    "    LO_INC_DEBT_MDN CHAR(18),\n",
+    "    MD_INC_DEBT_MDN CHAR(18),\n",
+    "    HI_INC_DEBT_MDN CHAR(18)\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 85,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "6848 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 85,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "COPY education07 FROM '/home/jovyan/work/education07.csv'\n",
+    "CSV\n",
+    "HEADER\n",
+    "QUOTE '\"'\n",
+    "DELIMITER ',';"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 86,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 86,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "ALTER TABLE education07\n",
+    "ADD year INT NOT NULL \n",
+    "CONSTRAINT year DEFAULT 2007"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 87,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 87,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "DROP TABLE IF EXISTS education06;\n",
+    "CREATE TABLE education06 (\n",
+    "    INSTITUTION CHAR(94),\n",
+    "    CITY CHAR(25),\n",
+    "    STABBR CHAR(2),\n",
+    "    ZIP CHAR(11),\n",
+    "    HIGHDEG INT,\n",
+    "    ICLEVEL CHAR(11),\n",
+    "    ADM_RATE CHAR(18),\n",
+    "    ADM_RATE_ALL CHAR(18),\n",
+    "    SAT_AVG CHAR(8),\n",
+    "    SAT_AVG_ALL CHAR(8),\n",
+    "    RET_FT4 CHAR(18),\n",
+    "    RET_FTL4 CHAR(18),\n",
+    "    RET_PT4 CHAR(18),\n",
+    "    RET_PTL4 CHAR(18),\n",
+    "    INC_PCT_LO CHAR(18),\n",
+    "    INC_PCT_M1 CHAR(18),\n",
+    "    INC_PCT_M2 CHAR(18),\n",
+    "    INC_PCT_H1 CHAR(18),\n",
+    "    INC_PCT_H2 CHAR(18),\n",
+    "    DEBT_MDN CHAR(18),   \n",
+    "    GRAD_DEBT_MDN CHAR(18),\n",
+    "    WDRAW_DEBT_MDN CHAR(18),\n",
+    "    LO_INC_DEBT_MDN CHAR(18),\n",
+    "    MD_INC_DEBT_MDN CHAR(18),\n",
+    "    HI_INC_DEBT_MDN CHAR(18)\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 88,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "6824 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 88,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "COPY education06 FROM '/home/jovyan/work/education06.csv'\n",
+    "CSV\n",
+    "HEADER\n",
+    "QUOTE '\"'\n",
+    "DELIMITER ',';"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 89,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 89,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "ALTER TABLE education06\n",
+    "ADD year INT NOT NULL \n",
+    "CONSTRAINT year DEFAULT 2006"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 90,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 90,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "DROP TABLE IF EXISTS education05;\n",
+    "CREATE TABLE education05 (\n",
+    "    INSTITUTION CHAR(94),\n",
+    "    CITY CHAR(25),\n",
+    "    STABBR CHAR(2),\n",
+    "    ZIP CHAR(11),\n",
+    "    HIGHDEG INT,\n",
+    "    ICLEVEL CHAR(11),\n",
+    "    ADM_RATE CHAR(18),\n",
+    "    ADM_RATE_ALL CHAR(18),\n",
+    "    SAT_AVG CHAR(8),\n",
+    "    SAT_AVG_ALL CHAR(8),\n",
+    "    RET_FT4 CHAR(18),\n",
+    "    RET_FTL4 CHAR(18),\n",
+    "    RET_PT4 CHAR(18),\n",
+    "    RET_PTL4 CHAR(18),\n",
+    "    INC_PCT_LO CHAR(18),\n",
+    "    INC_PCT_M1 CHAR(18),\n",
+    "    INC_PCT_M2 CHAR(18),\n",
+    "    INC_PCT_H1 CHAR(18),\n",
+    "    INC_PCT_H2 CHAR(18),\n",
+    "    DEBT_MDN CHAR(18),   \n",
+    "    GRAD_DEBT_MDN CHAR(18),\n",
+    "    WDRAW_DEBT_MDN CHAR(18),\n",
+    "    LO_INC_DEBT_MDN CHAR(18),\n",
+    "    MD_INC_DEBT_MDN CHAR(18),\n",
+    "    HI_INC_DEBT_MDN CHAR(18)\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 91,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "6660 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 91,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "COPY education05 FROM '/home/jovyan/work/education05.csv'\n",
+    "CSV\n",
+    "HEADER\n",
+    "QUOTE '\"'\n",
+    "DELIMITER ',';"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 92,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 92,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "ALTER TABLE education05\n",
+    "ADD year INT NOT NULL \n",
+    "CONSTRAINT year DEFAULT 2005"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Merge all datasets into one and put it into database"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 94,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "79735 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 94,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "DROP TABLE IF EXISTS education;\n",
+    "SELECT *\n",
+    "INTO education \n",
+    "FROM (\n",
+    "    SELECT * FROM education15 \n",
+    "    UNION ALL \n",
+    "    SELECT * FROM education14\n",
+    "    UNION ALL \n",
+    "    SELECT * FROM education13\n",
+    "    UNION ALL \n",
+    "    SELECT * FROM education12\n",
+    "    UNION ALL \n",
+    "    SELECT * FROM education11\n",
+    "    UNION ALL \n",
+    "    SELECT * FROM education10\n",
+    "    UNION ALL \n",
+    "    SELECT * FROM education09\n",
+    "    UNION ALL \n",
+    "    SELECT * FROM education08\n",
+    "    UNION ALL \n",
+    "    SELECT * FROM education07\n",
+    "    UNION ALL \n",
+    "    SELECT * FROM education06\n",
+    "    UNION ALL \n",
+    "    SELECT * FROM education05\n",
+    "    ) AS educational"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 95,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "1 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>count</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>79735</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(79735,)]"
+      ]
+     },
+     "execution_count": 95,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "SELECT count(*) FROM education"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 97,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "5 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>institution</th>\n",
+       "        <th>city</th>\n",
+       "        <th>stabbr</th>\n",
+       "        <th>zip</th>\n",
+       "        <th>highdeg</th>\n",
+       "        <th>iclevel</th>\n",
+       "        <th>adm_rate</th>\n",
+       "        <th>adm_rate_all</th>\n",
+       "        <th>sat_avg</th>\n",
+       "        <th>sat_avg_all</th>\n",
+       "        <th>ret_ft4</th>\n",
+       "        <th>ret_ftl4</th>\n",
+       "        <th>ret_pt4</th>\n",
+       "        <th>ret_ptl4</th>\n",
+       "        <th>inc_pct_lo</th>\n",
+       "        <th>inc_pct_m1</th>\n",
+       "        <th>inc_pct_m2</th>\n",
+       "        <th>inc_pct_h1</th>\n",
+       "        <th>inc_pct_h2</th>\n",
+       "        <th>debt_mdn</th>\n",
+       "        <th>grad_debt_mdn</th>\n",
+       "        <th>wdraw_debt_mdn</th>\n",
+       "        <th>lo_inc_debt_mdn</th>\n",
+       "        <th>md_inc_debt_mdn</th>\n",
+       "        <th>hi_inc_debt_mdn</th>\n",
+       "        <th>year</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Alabama A &amp; M University                                                                      </td>\n",
+       "        <td>Normal                   </td>\n",
+       "        <td>AL</td>\n",
+       "        <td>35762      </td>\n",
+       "        <td>4</td>\n",
+       "        <td>1          </td>\n",
+       "        <td>0.5256            </td>\n",
+       "        <td>0.52560347439652  </td>\n",
+       "        <td>827     </td>\n",
+       "        <td>827     </td>\n",
+       "        <td>0.6595            </td>\n",
+       "        <td>NULL              </td>\n",
+       "        <td>0.3333            </td>\n",
+       "        <td>NULL              </td>\n",
+       "        <td>0.6515211379      </td>\n",
+       "        <td>0.167917819       </td>\n",
+       "        <td>0.0975898854      </td>\n",
+       "        <td>0.0513630976      </td>\n",
+       "        <td>0.0316080601      </td>\n",
+       "        <td>15000             </td>\n",
+       "        <td>33888             </td>\n",
+       "        <td>11500             </td>\n",
+       "        <td>14413             </td>\n",
+       "        <td>18255             </td>\n",
+       "        <td>17250             </td>\n",
+       "        <td>2015</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>University of Alabama at Birmingham                                                           </td>\n",
+       "        <td>Birmingham               </td>\n",
+       "        <td>AL</td>\n",
+       "        <td>35294-0110 </td>\n",
+       "        <td>4</td>\n",
+       "        <td>1          </td>\n",
+       "        <td>0.8569            </td>\n",
+       "        <td>0.85691768826619  </td>\n",
+       "        <td>1107    </td>\n",
+       "        <td>1107    </td>\n",
+       "        <td>0.8288            </td>\n",
+       "        <td>NULL              </td>\n",
+       "        <td>0.575             </td>\n",
+       "        <td>NULL              </td>\n",
+       "        <td>0.4627393838      </td>\n",
+       "        <td>0.1623646961      </td>\n",
+       "        <td>0.1388426311      </td>\n",
+       "        <td>0.1286427977      </td>\n",
+       "        <td>0.1074104913      </td>\n",
+       "        <td>14382             </td>\n",
+       "        <td>21941.5           </td>\n",
+       "        <td>10000             </td>\n",
+       "        <td>14725             </td>\n",
+       "        <td>14692.5           </td>\n",
+       "        <td>14000             </td>\n",
+       "        <td>2015</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Amridge University                                                                            </td>\n",
+       "        <td>Montgomery               </td>\n",
+       "        <td>AL</td>\n",
+       "        <td>36117-3553 </td>\n",
+       "        <td>4</td>\n",
+       "        <td>1          </td>\n",
+       "        <td>NULL              </td>\n",
+       "        <td>NULL              </td>\n",
+       "        <td>NULL    </td>\n",
+       "        <td>NULL    </td>\n",
+       "        <td>0                 </td>\n",
+       "        <td>NULL              </td>\n",
+       "        <td>0.6667            </td>\n",
+       "        <td>NULL              </td>\n",
+       "        <td>0.7975830816      </td>\n",
+       "        <td>0.1359516616      </td>\n",
+       "        <td>0.0332326284      </td>\n",
+       "        <td>PrivacySuppressed </td>\n",
+       "        <td>PrivacySuppressed </td>\n",
+       "        <td>9500              </td>\n",
+       "        <td>23370             </td>\n",
+       "        <td>8687.5            </td>\n",
+       "        <td>8563              </td>\n",
+       "        <td>15750             </td>\n",
+       "        <td>13882             </td>\n",
+       "        <td>2015</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>University of Alabama in Huntsville                                                           </td>\n",
+       "        <td>Huntsville               </td>\n",
+       "        <td>AL</td>\n",
+       "        <td>35899      </td>\n",
+       "        <td>4</td>\n",
+       "        <td>1          </td>\n",
+       "        <td>0.8203            </td>\n",
+       "        <td>0.82034220532319  </td>\n",
+       "        <td>1219    </td>\n",
+       "        <td>1219    </td>\n",
+       "        <td>0.7696            </td>\n",
+       "        <td>NULL              </td>\n",
+       "        <td>0.6154            </td>\n",
+       "        <td>NULL              </td>\n",
+       "        <td>0.4565544952      </td>\n",
+       "        <td>0.1376192868      </td>\n",
+       "        <td>0.1426418885      </td>\n",
+       "        <td>0.138121547       </td>\n",
+       "        <td>0.1250627825      </td>\n",
+       "        <td>15750             </td>\n",
+       "        <td>24097             </td>\n",
+       "        <td>9500              </td>\n",
+       "        <td>17107             </td>\n",
+       "        <td>16938             </td>\n",
+       "        <td>14000             </td>\n",
+       "        <td>2015</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>Alabama State University                                                                      </td>\n",
+       "        <td>Montgomery               </td>\n",
+       "        <td>AL</td>\n",
+       "        <td>36104-0271 </td>\n",
+       "        <td>4</td>\n",
+       "        <td>1          </td>\n",
+       "        <td>0.5326            </td>\n",
+       "        <td>0.53264694382901  </td>\n",
+       "        <td>851     </td>\n",
+       "        <td>851     </td>\n",
+       "        <td>0.5725            </td>\n",
+       "        <td>NULL              </td>\n",
+       "        <td>0.28              </td>\n",
+       "        <td>NULL              </td>\n",
+       "        <td>0.6714959569      </td>\n",
+       "        <td>0.1644204852      </td>\n",
+       "        <td>0.0838948787      </td>\n",
+       "        <td>0.0488544474      </td>\n",
+       "        <td>0.0313342318      </td>\n",
+       "        <td>14362             </td>\n",
+       "        <td>33118.5           </td>\n",
+       "        <td>11500             </td>\n",
+       "        <td>14250             </td>\n",
+       "        <td>15019             </td>\n",
+       "        <td>14250             </td>\n",
+       "        <td>2015</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[('Alabama A & M University                                                                      ', 'Normal                   ', 'AL', '35762      ', 4, '1          ', '0.5256            ', '0.52560347439652  ', '827     ', '827     ', '0.6595            ', 'NULL              ', '0.3333            ', 'NULL              ', '0.6515211379      ', '0.167917819       ', '0.0975898854      ', '0.0513630976      ', '0.0316080601      ', '15000             ', '33888             ', '11500             ', '14413             ', '18255             ', '17250             ', 2015),\n",
+       " ('University of Alabama at Birmingham                                                           ', 'Birmingham               ', 'AL', '35294-0110 ', 4, '1          ', '0.8569            ', '0.85691768826619  ', '1107    ', '1107    ', '0.8288            ', 'NULL              ', '0.575             ', 'NULL              ', '0.4627393838      ', '0.1623646961      ', '0.1388426311      ', '0.1286427977      ', '0.1074104913      ', '14382             ', '21941.5           ', '10000             ', '14725             ', '14692.5           ', '14000             ', 2015),\n",
+       " ('Amridge University                                                                            ', 'Montgomery               ', 'AL', '36117-3553 ', 4, '1          ', 'NULL              ', 'NULL              ', 'NULL    ', 'NULL    ', '0                 ', 'NULL              ', '0.6667            ', 'NULL              ', '0.7975830816      ', '0.1359516616      ', '0.0332326284      ', 'PrivacySuppressed ', 'PrivacySuppressed ', '9500              ', '23370             ', '8687.5            ', '8563              ', '15750             ', '13882             ', 2015),\n",
+       " ('University of Alabama in Huntsville                                                           ', 'Huntsville               ', 'AL', '35899      ', 4, '1          ', '0.8203            ', '0.82034220532319  ', '1219    ', '1219    ', '0.7696            ', 'NULL              ', '0.6154            ', 'NULL              ', '0.4565544952      ', '0.1376192868      ', '0.1426418885      ', '0.138121547       ', '0.1250627825      ', '15750             ', '24097             ', '9500              ', '17107             ', '16938             ', '14000             ', 2015),\n",
+       " ('Alabama State University                                                                      ', 'Montgomery               ', 'AL', '36104-0271 ', 4, '1          ', '0.5326            ', '0.53264694382901  ', '851     ', '851     ', '0.5725            ', 'NULL              ', '0.28              ', 'NULL              ', '0.6714959569      ', '0.1644204852      ', '0.0838948787      ', '0.0488544474      ', '0.0313342318      ', '14362             ', '33118.5           ', '11500             ', '14250             ', '15019             ', '14250             ', 2015)]"
+      ]
+     },
+     "execution_count": 97,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "SELECT * FROM education\n",
+    "LIMIT 5"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Now you are good to go.\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "anaconda-cloud": {},
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.5.2"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 1
+}
